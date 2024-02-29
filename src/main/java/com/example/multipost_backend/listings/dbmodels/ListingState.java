@@ -1,4 +1,4 @@
-package com.example.multipost_backend.listings.models;
+package com.example.multipost_backend.listings.dbmodels;
 
 public enum ListingState {
     ACTIVE,

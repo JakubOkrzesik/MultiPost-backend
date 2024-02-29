@@ -1,5 +1,7 @@
 package com.example.multipost_backend.auth.user;
 
+import com.example.multipost_backend.listings.dbmodels.Listing;
+import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,6 +29,10 @@ public class User implements UserDetails {
     private String lastName;
     @Enumerated(EnumType.STRING)
     private Role role;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Listing> listings;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private UserAccessKeys keys;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

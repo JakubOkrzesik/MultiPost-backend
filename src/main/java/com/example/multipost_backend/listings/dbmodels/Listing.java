@@ -1,5 +1,6 @@
-package com.example.multipost_backend.listings.models;
+package com.example.multipost_backend.listings.dbmodels;
 
+import com.example.multipost_backend.auth.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Listings {
+@Table(name = "Listing")
+public class Listing {
     @Id
     @GeneratedValue
     private Integer id;
@@ -21,5 +23,7 @@ public class Listings {
     private String ebayUrl;
     @Enumerated(EnumType.STRING)
     private ListingState state;
-
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 }
