@@ -13,7 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @AllArgsConstructor
 public class EbayService {
 
-    private final WebClient client;
+    private final WebClient EbayClient;
     private final UserRepository userRepository;
 
     public EbayTokenResponse getEbayToken(String code) {
@@ -24,7 +24,7 @@ public class EbayService {
         headers.add("Content-Type", "application/x-www-form-urlencoded");
         headers.add("Authorization", String.format("Basic %s", credentials));
 
-        return client.post()
+        return EbayClient.post()
                 .uri("/identity/v1/oauth2/token")
                 .headers(h -> h.addAll(headers))
                 .bodyValue(new EbayTokenRequest("authorization_code", code, "your redirect uri"))

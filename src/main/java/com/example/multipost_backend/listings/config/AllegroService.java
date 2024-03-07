@@ -15,12 +15,12 @@ import java.util.Base64;
 @AllArgsConstructor
 public class AllegroService {
 
-    private final WebClient client;
+    private final WebClient AllegroClient;
     private final UserRepository userRepository;
 
 
     public AllegroTokenResponse getAllegroToken(String code) {
-        return client.post()
+        return AllegroClient.post()
                 .uri("auth/oauth/token")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)

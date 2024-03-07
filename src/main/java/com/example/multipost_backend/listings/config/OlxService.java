@@ -22,12 +22,12 @@ import java.util.function.Consumer;
 @AllArgsConstructor
 public class OlxService {
 
-    private final WebClient client;
+    private final WebClient OlxClient;
     private final UserRepository userRepository;
 
 
     public String advertHandler(Advert advert, String email) {
-        return client.post()
+        return OlxClient.post()
                 .uri("/partner/adverts")
                 .headers(getUserHeaders(email))
                 .retrieve()
@@ -35,7 +35,7 @@ public class OlxService {
     }
 
     public String advertHandler(String email) {
-        return client.get()
+        return OlxClient.get()
                 .uri("/partner/adverts")
                 .headers(getUserHeaders(email))
                 .retrieve()
@@ -43,7 +43,7 @@ public class OlxService {
     }
 
     private String getLocation(String lon, String lat, String email) {
-        return client.get()
+        return OlxClient.get()
                 .uri("/partner/location")
                 .headers(getUserHeaders(email))
                 .retrieve()
@@ -58,7 +58,7 @@ public class OlxService {
     }
 
     private String matchCategory(String email) {
-        return client.get()
+        return OlxClient.get()
                 .uri("/categories/suggestion")
                 .headers(getUserHeaders(email))
                 .retrieve()
@@ -66,7 +66,7 @@ public class OlxService {
     }
 
     public GrantCodeResponse getOlxToken(String code){
-        return client.post()
+        return OlxClient.post()
                 .uri("/open/oauth/token")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -97,7 +97,7 @@ public class OlxService {
 
 
     private GrantCodeResponse updateUserToken(String refreshToken){
-        return client.get()
+        return OlxClient.get()
                 .uri("/open/oauth/token").accept(MediaType.APPLICATION_JSON)
                 .headers((HttpHeaders httpHeaders) -> {
                     httpHeaders.add("grant_type", "refresh_token");
