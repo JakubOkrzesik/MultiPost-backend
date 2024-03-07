@@ -1,4 +1,4 @@
-package com.example.multipost_backend.listings.olx;
+package com.example.multipost_backend.listings.SharedApiModels;
 
 
 import lombok.AllArgsConstructor;
@@ -7,13 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class GrantCodeRequest {
     private String grant_type;
-    private String client_id;
-    private String client_secret;
     private String code;
-    private String scope;
 }

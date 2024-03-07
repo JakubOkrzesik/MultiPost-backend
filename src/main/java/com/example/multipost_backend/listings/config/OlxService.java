@@ -5,8 +5,8 @@ import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
 import com.example.multipost_backend.listings.olx.Advert;
-import com.example.multipost_backend.listings.olx.GrantCodeResponse;
-import com.example.multipost_backend.listings.olx.GrantCodeRequest;
+import com.example.multipost_backend.listings.SharedApiModels.GrantCodeResponse;
+import com.example.multipost_backend.listings.olx.OlxTokenRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.http.HttpHeaders;
 import reactor.core.publisher.Mono;
-
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -66,13 +65,13 @@ public class OlxService {
                 .toString();
     }
 
-    public GrantCodeResponse getGrantAuthcode(String code){
+    public GrantCodeResponse getOlxToken(String code){
         return client.post()
                 .uri("/open/oauth/token")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(new GrantCodeRequest("authorization_code", System.getenv("CLIENT_ID"),
-                        System.getenv("CLIENT_SECRET"), code, "v2 read write"))
+                .bodyValue(new OlxTokenRequest("authorization_code", System.getenv("OLX_CLIENT_ID"),
+                        System.getenv("OLX_CLIENT_SECRET"), code, "v2 read write"))
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, response -> response.bodyToMono(String.class)
                         .flatMap(errorBody -> Mono.error(new RuntimeException("Client error: " + errorBody))))

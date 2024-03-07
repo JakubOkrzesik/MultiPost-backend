@@ -22,10 +22,12 @@ public class UserAccessKeys {
     private String olxAccessToken;
     private String olxRefreshToken;
     private Date olxTokenExpiration;
-    private String allegroPrivate;
-    private String allegroPublic;
-    private String ebayPrivate;
-    private String ebayPublic;
+    private String allegroAccessToken;
+    private String allegroRefreshToken;
+    private Date allegroTokenExpiration;
+    private String ebayAccessToken;
+    private String ebayRefreshToken;
+    private Date ebayTokenExpiration;
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;
