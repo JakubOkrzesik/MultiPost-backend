@@ -25,7 +25,7 @@ public class AuthenticationService {
         if(userRepository.findByEmail(request.getEmail()).isPresent()){
             throw new UserAlreadyExistsException("This email address is already tied to a user");
         }
-        var user = User.builder()
+        User user = User.builder()
                 .firstName(request.getFirstname())
                 .lastName(request.getLastname())
                 .email(request.getEmail())

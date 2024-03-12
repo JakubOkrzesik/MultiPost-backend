@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.lang.reflect.Array;
 
 @Data
 @Builder
@@ -16,11 +15,12 @@ import java.lang.reflect.Array;
 public class Advert {
     private String title;
     private String description;
-    private int category_id;
+    private String category_id;
     @Enumerated(EnumType.STRING)
     private AdvertiserType advertiserType;
+    private Location location;
     private String name;
     private String phone;
-    private Array images;
+    private String[] images;
     private String price;
 }

@@ -7,6 +7,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 public class RequestsConfig {
+
+    // Note to self look out for thread safety of instantiated modules!!!!
     @Bean
     public WebClient OlxClient(){
         return WebClient.create("https://www.olx.pl/api");

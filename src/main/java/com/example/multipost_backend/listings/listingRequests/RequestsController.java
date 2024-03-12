@@ -4,9 +4,9 @@ package com.example.multipost_backend.listings.listingRequests;
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.allegro.AllegroTokenResponse;
-import com.example.multipost_backend.listings.config.AllegroService;
-import com.example.multipost_backend.listings.config.EbayService;
-import com.example.multipost_backend.listings.config.OlxService;
+import com.example.multipost_backend.listings.services.AllegroService;
+import com.example.multipost_backend.listings.services.EbayService;
+import com.example.multipost_backend.listings.services.OlxService;
 import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
 import com.example.multipost_backend.listings.dbmodels.UserKeysRepository;
 import com.example.multipost_backend.listings.ebay.EbayTokenResponse;
@@ -80,6 +80,7 @@ public class RequestsController {
                     .build()
             );
         }
+
         return ResponseEntity.ok("Allegro authorization successful");
     }
 
@@ -88,7 +89,26 @@ public class RequestsController {
         User user = userRepository.findByEmail("test@user.com")
                 .orElseThrow(() -> new UsernameNotFoundException("user not found"));
 
-        EbayTokenResponse response = ebayService.getEbayToken(code);
+        EbayTokenResponse response = ebayService.getEbayToken(code, "authorization_code");
+
+        Optional<UserAccessKeys> userKeysOptional = userKeysRepository.findByUser(user);
+
+        if (userKeysOptional.isPresent()) {
+            UserAccessKeys keys = userKeysOptional.get();
+            keys.setEbayAccessToken(response.getAccess_token());
+            keys.setEbayAccessToken(response.getRefresh_token());
+            keys.setEbayTokenExpiration(new Date(System.currentTimeMillis() + 1000L * Integer.parseInt(response.getExpires_in())));
+            userKeysRepository.save(keys);
+        } else {
+            userKeysRepository.save(UserAccessKeys
+                    .builder()
+                    .ebayAccessToken(response.getAccess_token())
+                    .ebayRefreshToken(response.getRefresh_token())
+                    .ebayTokenExpiration(new Date(System.currentTimeMillis() + 1000L * Integer.parseInt(response.getExpires_in())))
+                    .user(user)
+                    .build()
+            );
+        }
 
         return ResponseEntity.ok("Ebay authorization successful");
     }
