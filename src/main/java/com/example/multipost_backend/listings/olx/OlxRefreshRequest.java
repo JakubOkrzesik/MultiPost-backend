@@ -1,9 +1,7 @@
 package com.example.multipost_backend.listings.olx;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+
 
 @Builder(builderMethodName = "orRequestBuilder")
 public class OlxRefreshRequest {

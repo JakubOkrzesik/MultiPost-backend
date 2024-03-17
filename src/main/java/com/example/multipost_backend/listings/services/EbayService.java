@@ -5,7 +5,6 @@ import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.ebay.EbayTokenRequest;
 import com.example.multipost_backend.listings.ebay.EbayTokenResponse;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -13,7 +12,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import java.util.Base64;
 
 
 @Service
@@ -21,7 +19,6 @@ import java.util.Base64;
 public class EbayService {
 
     private final WebClient EbayClient;
-    private final UserRepository userRepository;
 
 
     // Getting ebay user token after receiving the user's code

@@ -2,7 +2,6 @@ package com.example.multipost_backend.listings.ebay;
 
 import com.example.multipost_backend.listings.SharedApiModels.GrantCodeRequest;
 import lombok.Builder;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)

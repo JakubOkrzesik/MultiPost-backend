@@ -2,13 +2,8 @@ package com.example.multipost_backend.listings.services;
 
 
 import io.github.cdimascio.dotenv.Dotenv;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.util.Base64;
-import java.util.Date;
 
 @Service
 @Data

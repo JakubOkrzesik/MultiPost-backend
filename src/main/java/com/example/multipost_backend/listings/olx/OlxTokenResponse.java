@@ -1,7 +1,6 @@
 package com.example.multipost_backend.listings.olx;
 
 import com.example.multipost_backend.listings.SharedApiModels.GrantCodeResponse;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

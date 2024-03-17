@@ -5,23 +5,17 @@ import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.allegro.AllegroTokenRequest;
 import com.example.multipost_backend.listings.allegro.AllegroTokenResponse;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-
-import java.util.Base64;
 
 @Service
 @AllArgsConstructor
 public class AllegroService {
 
     private final WebClient AllegroClient;
-    private final UserRepository userRepository;
 
     public AllegroTokenResponse getAllegroToken(String code) {
         return AllegroClient.post()

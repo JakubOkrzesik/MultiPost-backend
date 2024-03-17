@@ -2,7 +2,6 @@ package com.example.multipost_backend.listings.listingRequests;
 
 
 import com.example.multipost_backend.listings.services.EnvService;
-import io.github.cdimascio.dotenv.Dotenv;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
