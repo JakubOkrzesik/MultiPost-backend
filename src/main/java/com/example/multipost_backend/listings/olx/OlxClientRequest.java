@@ -1,13 +1,13 @@
 package com.example.multipost_backend.listings.olx;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-@AllArgsConstructor
+@Builder(builderMethodName = "ocRequestBuilder")
 public class OlxClientRequest {
-    private String grant_type;
-    private String client_id;
-    private String client_secret;
-    private String scope;
+    private final String grant_type;
+    private final String client_id;
+    private final String client_secret;
+    private final String scope;
 }

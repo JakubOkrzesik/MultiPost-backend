@@ -4,9 +4,7 @@ import com.example.multipost_backend.auth.user.Role;
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.allegro.AllegroTokenResponse;
-import com.example.multipost_backend.listings.services.AllegroService;
-import com.example.multipost_backend.listings.services.EbayService;
-import com.example.multipost_backend.listings.services.OlxService;
+import com.example.multipost_backend.listings.services.*;
 import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
 import com.example.multipost_backend.listings.dbmodels.UserKeysRepository;
 import com.example.multipost_backend.listings.ebay.EbayTokenResponse;
@@ -14,72 +12,76 @@ import com.example.multipost_backend.listings.olx.OlxTokenResponse;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.Date;
 import java.util.Optional;
 
 @Component
 @AllArgsConstructor
 public class AppCredentials {
 
-    private EbayService ebayService;
-    private AllegroService allegroService;
-    private OlxService olxService;
+    private final EbayService ebayService;
+    private final AllegroService allegroService;
+    private final OlxService olxService;
+    private final GeneralService generalService;
+    private final EnvService envService;
     private final UserRepository userRepository;
     private final UserKeysRepository userKeysRepository;
-    // Getting the application's OLX credentials on startup. These can be used to access parameters needed to complete
+
+
+    // Getting the application's OLX, Allegro and Ebay credentials on startup. These can be used to access parameters needed to complete
     // the details of a listing like categories, locations etc.
     @PostConstruct
     public void getClientCredentials() {
         Optional<User> user = userRepository.findByEmail("admin@admin.com");
+        UserAccessKeys newKeys;
 
         OlxTokenResponse olxResponse = olxService.getApplicationToken();
         AllegroTokenResponse allegroResponse = allegroService.getClientToken();
         EbayTokenResponse ebayResponse = ebayService.getClientToken();
 
-        if (user.isPresent()) {
-            Optional<UserAccessKeys> keys = userKeysRepository.findByUser(user.get());
-            if (keys.isPresent()){
-
-            }
-            else {
-
-            }
+        String password = envService.getADMIN_PASSWORD();
+        if (password == null) {
+            throw new IllegalStateException("Admin password not found in environmental variables");
         }
-        else {
+
+        if (user.isEmpty()) {
             User newUser = User.builder()
                     .email("admin@admin.com")
-                    .password(System.getenv("ADMIN_PASSWORD"))
+                    .password(password)
                     .role(Role.ADMIN)
                     .build();
-            userRepository.save(newUser);
-
-            UserAccessKeys newKeys = UserAccessKeys.builder()
-                    .olxAccessToken(olxResponse.getAccess_token())
-                    .olxRefreshToken(olxResponse.getRefresh_token())
-                    .olxTokenExpiration(new Date(System.currentTimeMillis() + Integer.parseInt(olxResponse.getExpires_in())))
-                    .ebayAccessToken(ebayResponse.getAccess_token())
-                    .ebayRefreshToken(ebayResponse.getRefresh_token())
-                    .ebayTokenExpiration(new Date(System.currentTimeMillis() + Integer.parseInt(ebayResponse.getExpires_in())))
-                    .allegroAccessToken(allegroResponse.getAccess_token())
-                    .allegroRefreshToken(allegroResponse.getRefresh_token())
-                    .allegroTokenExpiration(new Date(System.currentTimeMillis() + Integer.parseInt(allegroResponse.getExpires_in())))
-                    .user(newUser)
-                    .build();
-
-            userKeysRepository.save(newKeys);
-
+            user = Optional.of(userRepository.save(newUser));
         }
 
+        Optional<UserAccessKeys> keys = userKeysRepository.findByUser(user.get());
 
+        if (keys.isPresent()) {
+            newKeys = keys.get();
+        }
+        else {
+            newKeys = UserAccessKeys.builder()
+                    .user(user.get())
+                    .build();
+        }
 
+        setTokenData(newKeys, olxResponse, allegroResponse, ebayResponse);
 
-
-
+        userKeysRepository.save(newKeys);
 
     }
 
+    private void setTokenData(UserAccessKeys keys, OlxTokenResponse olxResponse, AllegroTokenResponse allegroResponse, EbayTokenResponse ebayResponse) {
+        keys.setOlxAccessToken(olxResponse.getAccess_token());
+        keys.setOlxRefreshToken(olxResponse.getRefresh_token());
+        keys.setOlxTokenExpiration(generalService.calculateExpiration(olxResponse.getExpires_in()));
 
+        keys.setAllegroAccessToken(allegroResponse.getAccess_token());
+        keys.setAllegroRefreshToken(allegroResponse.getRefresh_token());
+        keys.setAllegroTokenExpiration(generalService.calculateExpiration(allegroResponse.getExpires_in()));
+
+        keys.setEbayAccessToken(ebayResponse.getAccess_token());
+        keys.setEbayRefreshToken(ebayResponse.getRefresh_token());
+        keys.setEbayTokenExpiration(generalService.calculateExpiration(ebayResponse.getExpires_in()));
+    }
 
 
 }

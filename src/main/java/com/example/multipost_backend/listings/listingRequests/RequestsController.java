@@ -89,7 +89,7 @@ public class RequestsController {
         User user = userRepository.findByEmail("test@user.com")
                 .orElseThrow(() -> new UsernameNotFoundException("user not found"));
 
-        EbayTokenResponse response = ebayService.getEbayToken(code, "authorization_code");
+        EbayTokenResponse response = ebayService.getUserToken(code);
 
         Optional<UserAccessKeys> userKeysOptional = userKeysRepository.findByUser(user);
 

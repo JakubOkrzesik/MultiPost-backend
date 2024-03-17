@@ -7,6 +7,7 @@ import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
 import com.example.multipost_backend.listings.olx.*;
 import com.example.multipost_backend.listings.SharedApiModels.GrantCodeResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -28,7 +29,7 @@ public class OlxService {
     private final UserRepository userRepository;
     // Cached user tokens are added to HashMap to reduce amount of db queries
     private final Map<String, String> userTokenCache = new ConcurrentHashMap<>();
-
+    private final EnvService envService;
 
     // Form content from advert creation is passed as a map
     public String advertHandler(Map<String, String> newAdvert, String email) {
@@ -108,8 +109,8 @@ public class OlxService {
     // Method provides the two always required headers for OLX Api requests
     private HttpHeaders getUserHeaders(String email){
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", String.format("Bearer %s", getUserToken(email)));
-        headers.add("Version", "2.0");
+        headers.set(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", getUserToken(email)));
+        headers.set("Version", "2.0");
         return headers;
     }
 
@@ -128,8 +129,8 @@ public class OlxService {
                 .uri("/open/oauth/token")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(new OlxTokenRequest("authorization_code", System.getenv("OLX_CLIENT_ID"),
-                        System.getenv("OLX_CLIENT_SECRET"), code, "v2 read write"))
+                .bodyValue(new OlxTokenRequest("authorization_code", envService.getOLX_CLIENT_ID(),
+                        envService.getOLX_CLIENT_SECRET(), code, "v2 read write"))
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, response -> response.bodyToMono(String.class)
                         .flatMap(errorBody -> Mono.error(new RuntimeException("Client error: " + errorBody))))
@@ -171,20 +172,29 @@ public class OlxService {
     private OlxTokenResponse updateUserToken(String refreshToken){
         return OlxClient.post()
                 .uri("/open/oauth/token").accept(MediaType.APPLICATION_JSON)
-                .bodyValue(new OlxRefreshRequest("refresh_token", System.getenv("OLX_CLIENT_ID"),
-                        System.getenv("OLX_CLIENT_SECRET"), refreshToken))
+                .bodyValue(OlxRefreshRequest.orRequestBuilder()
+                        .grant_type("refresh_token")
+                        .client_id(envService.getOLX_CLIENT_ID())
+                        .client_secret(envService.getOLX_CLIENT_SECRET())
+                        .refresh_token(refreshToken))
                 .retrieve()
                 .bodyToMono(OlxTokenResponse.class)
                 .block();
     }
 
 
-    // New function that differentiates from getOlxToken is needed because of the differences in request body
+    // Function that differentiates from getOlxToken is needed because of the differences in request body
     public OlxTokenResponse getApplicationToken() {
         return OlxClient.post()
-                .uri("/api/open/oauth/token")
-                .bodyValue(new OlxClientRequest("client_credentials", System.getenv("OLX_CLIENT_ID"),
-                        System.getenv("OLX_CLIENT_SECRET"), "v2 read write"))
+                .uri("/open/oauth/token")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(OlxClientRequest.ocRequestBuilder()
+                        .grant_type("client_credentials")
+                        .client_id(envService.getOLX_CLIENT_ID())
+                        .client_secret(envService.getOLX_CLIENT_SECRET())
+                        .scope("v2 read write")
+                        .build())
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, response -> response.bodyToMono(String.class)
                         .flatMap(errorBody -> Mono.error(new RuntimeException("Client error: " + errorBody))))

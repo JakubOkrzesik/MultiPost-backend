@@ -22,10 +22,14 @@ public class UserAccessKeys {
     private String olxAccessToken;
     private String olxRefreshToken;
     private Date olxTokenExpiration;
+    @Column(length = 980)
     private String allegroAccessToken;
+    @Column(length = 980)
     private String allegroRefreshToken;
     private Date allegroTokenExpiration;
+    @Column(length = 2000)
     private String ebayAccessToken;
+    @Column(length = 2000)
     private String ebayRefreshToken;
     private Date ebayTokenExpiration;
     @OneToOne
