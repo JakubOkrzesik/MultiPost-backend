@@ -91,6 +91,8 @@ public class RequestsController {
 
         EbayTokenResponse response = ebayService.getUserToken(code);
 
+        // App needs to create ebay policies here
+
         Optional<UserAccessKeys> userKeysOptional = userKeysRepository.findByUser(user);
 
         if (userKeysOptional.isPresent()) {

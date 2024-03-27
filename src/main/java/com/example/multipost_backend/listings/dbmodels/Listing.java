@@ -22,7 +22,11 @@ public class Listing {
     private String allegroUrl;
     private String ebayUrl;
     @Enumerated(EnumType.STRING)
-    private ListingState state;
+    private ListingState olxState;
+    @Enumerated(EnumType.STRING)
+    private ListingState allegroState;
+    @Enumerated(EnumType.STRING)
+    private ListingState ebayState;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
