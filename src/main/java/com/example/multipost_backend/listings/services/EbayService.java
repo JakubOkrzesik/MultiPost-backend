@@ -2,8 +2,6 @@ package com.example.multipost_backend.listings.services;
 
 
 import com.example.multipost_backend.auth.user.User;
-import com.example.multipost_backend.auth.user.UserRepository;
-import com.example.multipost_backend.listings.ebay.EbayTokenRequest;
 import com.example.multipost_backend.listings.ebay.EbayTokenResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
@@ -16,7 +14,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -33,15 +30,18 @@ public class EbayService {
 
     // Getting ebay user token after receiving the user's code
     public EbayTokenResponse getUserToken(String code) {
+        MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
+        requestBody.add("grant_type", "authorization_code");
+        requestBody.add("code", code);
+        requestBody.add("redirect_uri", String.format("%s/api/v1/auth/ebay", envService.getREDIRECT_URI()));
+
+
         return EbayClient.post()
                 .uri("/identity/v1/oauth2/token")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .header(HttpHeaders.AUTHORIZATION, generalService.getAuthorizationHeader(envService.getEBAY_CLIENT_ID(), envService.getEBAY_CLIENT_SECRET()))
-                .bodyValue(EbayTokenRequest.etRequestBuilder()
-                        .grant_type("authorization_code")
-                        .code(code)
-                        .redirect_uri("https://1398-77-255-216-45.ngrok-free.app/api/v1/auth/ebay"))
+                .bodyValue(requestBody)
                 .retrieve()
                 .bodyToMono(EbayTokenResponse.class)
                 .block();

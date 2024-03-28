@@ -27,7 +27,7 @@ public class UserAccessKeys {
     @Column(length = 2000)
     private String allegroRefreshToken;
     private Date allegroTokenExpiration;
-    @Column(length = 2000)
+    @Column(length = 3000)
     private String ebayAccessToken;
     @Column(length = 2000)
     private String ebayRefreshToken;

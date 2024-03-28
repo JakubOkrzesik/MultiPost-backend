@@ -6,6 +6,7 @@ import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.allegro.AllegroTokenResponse;
 import com.example.multipost_backend.listings.services.AllegroService;
 import com.example.multipost_backend.listings.services.EbayService;
+import com.example.multipost_backend.listings.services.GeneralService;
 import com.example.multipost_backend.listings.services.OlxService;
 import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
 import com.example.multipost_backend.listings.dbmodels.UserKeysRepository;
@@ -28,6 +29,7 @@ public class RequestsController {
     private final OlxService olxService;
     private final EbayService ebayService;
     private final AllegroService allegroService;
+    private final GeneralService generalService;
 
     @GetMapping("/olx")
     public ResponseEntity<String> olxAuth(@RequestParam("code") String code){
@@ -68,14 +70,14 @@ public class RequestsController {
             UserAccessKeys keys = userKeysOptional.get();
             keys.setAllegroAccessToken(response.getAccess_token());
             keys.setAllegroAccessToken(response.getRefresh_token());
-            keys.setAllegroTokenExpiration(new Date(System.currentTimeMillis() + 1000L * Integer.parseInt(response.getExpires_in())));
+            keys.setAllegroTokenExpiration(generalService.calculateExpiration(response.getExpires_in()));
             userKeysRepository.save(keys);
         } else {
             userKeysRepository.save(UserAccessKeys
                     .builder()
                     .allegroAccessToken(response.getAccess_token())
                     .allegroRefreshToken(response.getRefresh_token())
-                    .allegroTokenExpiration(new Date(System.currentTimeMillis() + 1000L * Integer.parseInt(response.getExpires_in())))
+                    .allegroTokenExpiration(generalService.calculateExpiration(response.getExpires_in()))
                     .user(user)
                     .build()
             );
@@ -99,14 +101,14 @@ public class RequestsController {
             UserAccessKeys keys = userKeysOptional.get();
             keys.setEbayAccessToken(response.getAccess_token());
             keys.setEbayAccessToken(response.getRefresh_token());
-            keys.setEbayTokenExpiration(new Date(System.currentTimeMillis() + 1000L * Integer.parseInt(response.getExpires_in())));
+            keys.setEbayTokenExpiration(generalService.calculateExpiration(response.getExpires_in()));
             userKeysRepository.save(keys);
         } else {
             userKeysRepository.save(UserAccessKeys
                     .builder()
                     .ebayAccessToken(response.getAccess_token())
                     .ebayRefreshToken(response.getRefresh_token())
-                    .ebayTokenExpiration(new Date(System.currentTimeMillis() + 1000L * Integer.parseInt(response.getExpires_in())))
+                    .ebayTokenExpiration(generalService.calculateExpiration(response.getExpires_in()))
                     .user(user)
                     .build()
             );

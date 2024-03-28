@@ -28,7 +28,7 @@ public class AllegroService {
 
     public AllegroTokenResponse getAllegroToken(String code) {
         return AllegroClient.post() // The allegro api does not work with the .bodyValue method inside webclient or im doing sth wrong (probably the case)
-                .uri(String.format("auth/oauth/token?grant_type=authorization_code&code=%s&redirect_uri=https://ebac-77-255-216-45.ngrok-free.app/api/v1/auth/allegro", code))
+                .uri(String.format("auth/oauth/token?grant_type=authorization_code&code=%s&redirect_uri=%s/api/v1/auth/allegro", code, envService.getREDIRECT_URI()))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, generalService.getAuthorizationHeader(envService.getALLEGRO_CLIENT_ID(), envService.getALLEGRO_CLIENT_SECRET()))
