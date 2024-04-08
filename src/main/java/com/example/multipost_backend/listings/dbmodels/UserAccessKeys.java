@@ -32,7 +32,6 @@ public class UserAccessKeys {
     @Column(length = 2000)
     private String ebayRefreshToken;
     private Date ebayTokenExpiration;
-    @OneToOne
-    @JoinColumn(name = "user_id")
+    @OneToOne(mappedBy = "keys")
     private User user;
 }

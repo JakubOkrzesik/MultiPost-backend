@@ -31,7 +31,8 @@ public class User implements UserDetails {
     private Role role;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Listing> listings;
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "keys_id", referencedColumnName = "id")
     private UserAccessKeys keys;
 
     @Override

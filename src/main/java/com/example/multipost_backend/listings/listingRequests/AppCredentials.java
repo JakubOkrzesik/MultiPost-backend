@@ -52,7 +52,8 @@ public class AppCredentials {
             user = Optional.of(userRepository.save(newUser));
         }
 
-        newKeys = user.get().getKeys();
+        User user1 = user.get();
+        newKeys = user1.getKeys();
 
         if (newKeys==null) {
             newKeys = UserAccessKeys.builder()
@@ -61,9 +62,9 @@ public class AppCredentials {
         }
 
         setTokenData(newKeys, olxResponse, allegroResponse, ebayResponse);
-
+        user1.setKeys(newKeys);
         userKeysRepository.save(newKeys);
-
+        userRepository.save(user1);
     }
 
     private void setTokenData(UserAccessKeys keys, OlxTokenResponse olxResponse, AllegroTokenResponse allegroResponse, EbayTokenResponse ebayResponse) {
@@ -79,6 +80,4 @@ public class AppCredentials {
         keys.setEbayRefreshToken(ebayResponse.getRefresh_token());
         keys.setEbayTokenExpiration(generalService.calculateExpiration(ebayResponse.getExpires_in()));
     }
-
-
 }

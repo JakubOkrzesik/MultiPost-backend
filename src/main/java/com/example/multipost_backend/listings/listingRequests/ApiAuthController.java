@@ -22,7 +22,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("api/v1/auth")
 @RequiredArgsConstructor
-public class RequestsController {
+public class ApiAuthController {
 
     private final UserRepository userRepository;
     private final UserKeysRepository userKeysRepository;
@@ -37,25 +37,29 @@ public class RequestsController {
                 .orElseThrow(() -> new UsernameNotFoundException("user not found"));
         GrantCodeResponse response = olxService.getOlxToken(code);
 
+        UserAccessKeys keys;
+
         Optional<UserAccessKeys> userKeysOptional = userKeysRepository.findByUser(user);
 
         if (userKeysOptional.isPresent()) {
-            UserAccessKeys keys = userKeysOptional.get();
+            keys = userKeysOptional.get();
             keys.setOlxAccessToken(response.getAccess_token());
             keys.setOlxRefreshToken(response.getRefresh_token());
             keys.setOlxTokenExpiration(new Date(System.currentTimeMillis() + 1000L * Integer.parseInt(response.getExpires_in())));
-            userKeysRepository.save(keys);
         } else {
-            userKeysRepository.save(UserAccessKeys
+            keys = UserAccessKeys
                     .builder()
                     .olxAccessToken(response.getAccess_token())
                     .olxRefreshToken(response.getRefresh_token())
                     .olxTokenExpiration(new Date(System.currentTimeMillis() + 1000L * Integer.parseInt(response.getExpires_in())))
                     .user(user)
-                    .build()
-            );
+                    .build();
         }
-        return ResponseEntity.ok("OLX Authorization successful");
+        user.setKeys(keys);
+        userKeysRepository.save(keys);
+        userRepository.save(user);
+
+        return ResponseEntity.ok("OLX authentication successful");
     }
 
     @GetMapping("/allegro")
@@ -64,26 +68,31 @@ public class RequestsController {
                 .orElseThrow(() -> new UsernameNotFoundException("user not found"));
         AllegroTokenResponse response = allegroService.getAllegroToken(code);
 
+        UserAccessKeys keys;
+
         Optional<UserAccessKeys> userKeysOptional = userKeysRepository.findByUser(user);
 
         if (userKeysOptional.isPresent()) {
-            UserAccessKeys keys = userKeysOptional.get();
+            keys = userKeysOptional.get();
             keys.setAllegroAccessToken(response.getAccess_token());
             keys.setAllegroAccessToken(response.getRefresh_token());
             keys.setAllegroTokenExpiration(generalService.calculateExpiration(response.getExpires_in()));
-            userKeysRepository.save(keys);
+
         } else {
-            userKeysRepository.save(UserAccessKeys
+            keys = UserAccessKeys
                     .builder()
                     .allegroAccessToken(response.getAccess_token())
                     .allegroRefreshToken(response.getRefresh_token())
                     .allegroTokenExpiration(generalService.calculateExpiration(response.getExpires_in()))
                     .user(user)
-                    .build()
-            );
+                    .build();
         }
+        user.setKeys(keys);
+        userKeysRepository.save(keys);
+        userRepository.save(user);
 
-        return ResponseEntity.ok("Allegro authorization successful");
+
+        return ResponseEntity.ok("Allegro authentication successful");
     }
 
     @GetMapping("/ebay")
@@ -93,26 +102,29 @@ public class RequestsController {
 
         EbayTokenResponse response = ebayService.getUserToken(code);
 
+        UserAccessKeys keys;
+
         // App needs to create ebay policies here
 
         Optional<UserAccessKeys> userKeysOptional = userKeysRepository.findByUser(user);
 
         if (userKeysOptional.isPresent()) {
-            UserAccessKeys keys = userKeysOptional.get();
+            keys = userKeysOptional.get();
             keys.setEbayAccessToken(response.getAccess_token());
             keys.setEbayAccessToken(response.getRefresh_token());
             keys.setEbayTokenExpiration(generalService.calculateExpiration(response.getExpires_in()));
-            userKeysRepository.save(keys);
         } else {
-            userKeysRepository.save(UserAccessKeys
+            keys = UserAccessKeys
                     .builder()
                     .ebayAccessToken(response.getAccess_token())
                     .ebayRefreshToken(response.getRefresh_token())
                     .ebayTokenExpiration(generalService.calculateExpiration(response.getExpires_in()))
                     .user(user)
-                    .build()
-            );
+                    .build();
         }
+        user.setKeys(keys);
+        userKeysRepository.save(keys);
+        userRepository.save(user);
 
         return ResponseEntity.ok("Ebay authorization successful");
     }

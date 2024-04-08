@@ -6,6 +6,7 @@ import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
 import com.example.multipost_backend.listings.olx.*;
 import com.example.multipost_backend.listings.SharedApiModels.GrantCodeResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.http.HttpHeaders;
 import reactor.core.publisher.Mono;
@@ -32,13 +34,13 @@ public class OlxService {
     // Cached user tokens are added to HashMap to reduce amount of db queries
     private final Map<String, Map<String, Object>> userTokenCache = new ConcurrentHashMap<>();
     private final EnvService envService;
-    private final ObjectMapper objectMapper;
     private final GeneralService generalService;
+    private final ObjectMapper objectMapper;
 
     // Form content from advert creation is passed as a map
     public JsonNode createAdvert(JsonNode newAdvert, User user) throws IOException {
 
-        return OlxClient.post()
+        String data = OlxClient.post()
                 .uri("/partner/adverts")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -46,19 +48,15 @@ public class OlxService {
                     h.add("Content-Type", "application/json header");
                     h.addAll(getUserHeaders(user));
                 })
-                .bodyValue(Advert.builder()
-                        .title(newAdvert.get("title").asText())
-                        .description(newAdvert.get("description").asText())
-                        .category_id(getCategorySuggestion(newAdvert.get("title").asText(), user))
-                        .advertiserType(AdvertiserType.PRIVATE)
-                        .location(getLocation(newAdvert.get("lat").asText(), newAdvert.get("lon").asText(), user))
-                        .name(newAdvert.get("name").asText())
-                        .images(objectMapper.readValue(newAdvert.get("images").traverse(), String[].class))
-                        .price(newAdvert.get("price").asText()))
+                .bodyValue(newAdvert)
                 // could replace Advert class with JsonNode
                 .retrieve()
-                .bodyToMono(JsonNode.class)
+                .onStatus(HttpStatusCode::is4xxClientError, response -> response.bodyToMono(String.class)
+                        .flatMap(errorBody -> Mono.error(new RuntimeException("Client error: " + errorBody))))
+                .bodyToMono(String.class)
                 .block();
+
+        return objectMapper.readTree(data);
     }
 
     public String getAdvert(User user) {
@@ -67,6 +65,8 @@ public class OlxService {
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
                 .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, response -> response.bodyToMono(String.class)
+                        .flatMap(errorBody -> Mono.error(new RuntimeException("Client error: " + errorBody))))
                 .toString();
     }
 
@@ -79,40 +79,60 @@ public class OlxService {
                     h.addAll(getUserHeaders(user));
                 })
                 .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, response -> response.bodyToMono(String.class)
+                        .flatMap(errorBody -> Mono.error(new RuntimeException("Client error: " + errorBody))))
                 .toString();
     }
 
 
     // OLX requires location to be acquired from their api - retrieving user specified coordinates from Google Maps api
     // and parsing them into the request body
-    private Location getLocation(String lat, String lon, User user) {
+    public Location getLocation(String lat, String lon) {
+
+        User user = userRepository.findByEmail("admin@admin.com")
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
         return OlxClient.get()
-                .uri("/partner/location")
+                .uri(String.format("/partner/locations?latitude=%s&longitude=%s", lat, lon))
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
-                .attributes(a -> {
+                /*.attributes(a -> {
                     a.put("latitude", lat);
                     a.put("longitude", lon);
-                })
+                })*/
                 .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, response -> response.bodyToMono(String.class)
+                        .flatMap(errorBody -> Mono.error(new RuntimeException("Client error: " + errorBody))))
                 .bodyToMono(Location.class)
                 .block();
     }
 
     // Title is provided to extract a category ID
-    private String getCategorySuggestion(String title, User user) {
-        return OlxClient.get()
-                .uri("/categories/suggestion")
+    public String getCategorySuggestion(String title) throws JsonProcessingException {
+
+        // Not the most efficient way of going about it needs tweaking
+        User user = userRepository.findByEmail("admin@admin.com")
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        String data =  OlxClient.get()
+                .uri(String.format("partner/categories/suggestion?q=%s", title))
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
-                .attribute("q", title)
                 .retrieve()
-                .toString();
+                .onStatus(HttpStatusCode::is4xxClientError, response -> response.bodyToMono(String.class)
+                        .flatMap(errorBody -> Mono.error(new RuntimeException("Client error: " + errorBody))))
+                .bodyToMono(String.class)
+                .block();
+
+        assert data != null;
+        JsonNode jsonData = objectMapper.readTree(data);
+
+        return jsonData.get("path").get("id").asText();
     }
 
 
     // Method provides the two always required headers for OLX Api requests
-    private HttpHeaders getUserHeaders(User user){
+    private HttpHeaders getUserHeaders(User user) {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", getUserToken(user)));
         headers.set("Version", "2.0");
@@ -121,7 +141,7 @@ public class OlxService {
 
     // Retrieves the access token, refresh token and access token expiration date after
     // getting auth code from olx
-    public GrantCodeResponse getOlxToken(String code){
+    public GrantCodeResponse getOlxToken(String code) {
         return OlxClient.post()
                 .uri("/open/oauth/token")
                 .accept(MediaType.APPLICATION_JSON)
@@ -144,6 +164,7 @@ public class OlxService {
 
     // Retrieving the olx user token from the database. If the token is expired a request is made
     // with the refresh token to update the user token
+    @Transactional
     public String getUserToken(User user) {
         // Check if user is in cache and if the token is expired
         Map<String, Object> tokenData = userTokenCache.get(user.getEmail());
@@ -178,10 +199,10 @@ public class OlxService {
         }
         // User does not have OLX credentials set up
         return "User needs to be signed in to the OLX Api again";
-        }
+    }
 
     // Method makes request with the refresh token to update the user token
-    private OlxTokenResponse updateUserToken(String refreshToken){
+    private OlxTokenResponse updateUserToken(String refreshToken) {
         return OlxClient.post()
                 .uri("/open/oauth/token").accept(MediaType.APPLICATION_JSON)
                 .bodyValue(OlxRefreshRequest.orRequestBuilder()
