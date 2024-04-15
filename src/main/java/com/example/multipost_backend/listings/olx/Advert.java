@@ -1,32 +1,29 @@
 package com.example.multipost_backend.listings.olx;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import lombok.*;
+import java.util.List;
 
-@Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@Data
 public class Advert {
-    @NonNull
+    @JsonProperty("title")
     private String title;
-    @NonNull
+    @JsonProperty("description")
     private String description;
-    @NonNull
-    private String category_id;
-    @Enumerated(EnumType.STRING)
-    @NonNull
-    private AdvertiserType advertiserType;
-    @NonNull
+    @JsonProperty("category_id")
+    private String categoryId;
+    @JsonProperty("advertiser_type")
+    private String advertiserType;
+    private Contact contact;
     private Location location;
-    @NonNull
-    private String name;
-    @NonNull
-    private String phone;
-    @NonNull
-    private String[] images;
-    @NonNull
-    private String price;
+    private List<Image> images;
+    private Price price;
+    private List<Attrib> attributes;
 }
+

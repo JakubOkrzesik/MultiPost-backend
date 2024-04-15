@@ -49,7 +49,7 @@ public class AdvertController {
         return ResponseEntity.ok(listings);
     }
 
-    @PostMapping("/create")
+    /*@PostMapping("/create")
     public ResponseEntity<String> postAdvert(HttpServletRequest request, @RequestBody JsonNode jsonData) throws IOException {
 
         User user = generalService.getUser(request);
@@ -94,5 +94,5 @@ public class AdvertController {
         }
 
         return listing;
-    }
+    }*/
 }

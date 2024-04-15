@@ -29,7 +29,7 @@ public class AppCredentials {
 
     // Getting the application's OLX, Allegro and Ebay credentials on startup. These can be used to access parameters needed to complete
     // the details of a listing like categories, locations etc.
-    // @PostConstruct
+    @PostConstruct
     public void getClientCredentials() {
         Optional<User> user = userRepository.findByEmail("admin@admin.com");
         UserAccessKeys newKeys;
