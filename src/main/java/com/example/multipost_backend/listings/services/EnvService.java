@@ -17,6 +17,7 @@ public class EnvService {
     private final String EBAY_CLIENT_SECRET;
     private final String ADMIN_PASSWORD;
     private final String REDIRECT_URI;
+    private final String FRONTEND_URI;
     private final Dotenv dotenv;
 
     private EnvService(Dotenv dotenv) {
@@ -29,5 +30,6 @@ public class EnvService {
         this.EBAY_CLIENT_SECRET = dotenv.get("EBAY_CLIENT_SECRET");
         this.ADMIN_PASSWORD = dotenv.get("ADMIN_PASSWORD");
         this.REDIRECT_URI = dotenv.get("REDIRECT_URI");
+        this.FRONTEND_URI = dotenv.get("FRONTEND_URI");
     }
 }

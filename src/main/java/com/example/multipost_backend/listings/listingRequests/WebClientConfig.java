@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -12,6 +13,11 @@ import reactor.core.publisher.Mono;
 @Configuration
 @AllArgsConstructor
 public class WebClientConfig {
+
+    final int size = 16 * 1024 * 1024;
+    final ExchangeStrategies strategies = ExchangeStrategies.builder()
+            .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(size))
+            .build();
 
     @Bean
     public WebClient OlxClient(){
@@ -24,12 +30,13 @@ public class WebClientConfig {
                     }
                     return Mono.just(clientResponse);
                 }))
+                .exchangeStrategies(strategies)
                 .build();
     }
 
     @Bean
     public WebClient AllegroClient() { return WebClient.builder()
-            .baseUrl("https://allegro.pl")
+            .baseUrl("https://api.allegro.pl.allegrosandbox.pl")
             .filter(ExchangeFilterFunction.ofResponseProcessor(clientResponse -> {
                 if (clientResponse.statusCode().is4xxClientError()) {
                     return clientResponse.bodyToMono(String.class)
@@ -37,6 +44,7 @@ public class WebClientConfig {
                 }
                 return Mono.just(clientResponse);
             }))
+            .exchangeStrategies(strategies)
             .build();
     }
 
@@ -50,6 +58,7 @@ public class WebClientConfig {
                 }
                 return Mono.just(clientResponse);
             }))
+            .exchangeStrategies(strategies)
             .build();
     }
 

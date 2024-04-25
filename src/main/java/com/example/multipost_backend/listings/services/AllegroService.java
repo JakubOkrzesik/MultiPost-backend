@@ -8,6 +8,7 @@ import com.example.multipost_backend.listings.allegro.AllegroTokenResponse;
 import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
 import com.example.multipost_backend.listings.olx.OlxTokenResponse;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -32,10 +33,10 @@ public class AllegroService {
     private final UserRepository userRepository;
 
     public AllegroTokenResponse getAllegroToken(String code) {
-        return AllegroClient.post() // The allegro api does not work with the .bodyValue method inside webclient or im doing sth wrong (probably the case)
-                .uri(String.format("auth/oauth/token?grant_type=authorization_code&code=%s&redirect_uri=%s/api/v1/auth/allegro", code, envService.getREDIRECT_URI()))
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
+        return AllegroClient.mutate().baseUrl("https://allegro.pl.allegrosandbox.pl").build().post() // The allegro api does not work with the .bodyValue method inside webclient or im doing sth wrong (probably the case)
+                .uri(String.format("/auth/oauth/token?grant_type=authorization_code&code=%s&redirect_uri=%s/api/v1/auth/allegro", code, envService.getREDIRECT_URI()))
+                .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
+                .contentType(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .headers(h -> h.addAll(getAllegroHeaders()))
                 .retrieve()
                 .bodyToMono(AllegroTokenResponse.class)
@@ -43,8 +44,19 @@ public class AllegroService {
     }
 
     public AllegroTokenResponse getClientToken() {
-        return AllegroClient.post()
+        return AllegroClient.mutate().baseUrl("https://allegro.pl.allegrosandbox.pl").build().post()
                 .uri("/auth/oauth/token?grant_type=client_credentials")
+                .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
+                .contentType(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
+                .headers(h -> h.addAll(getAllegroHeaders()))
+                .retrieve()
+                .bodyToMono(AllegroTokenResponse.class)
+                .block();
+    }
+
+    private AllegroTokenResponse updateUserToken(String allegroRefreshToken) {
+        return AllegroClient.mutate().baseUrl("https://allegro.pl.allegrosandbox.pl").build().post()
+                .uri(String.format("/auth/oauth/token?grant_type=refresh_token&refresh_token=%s&redirect_uri=%s/api/v1/auth/allegro", allegroRefreshToken, envService.getREDIRECT_URI()))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getAllegroHeaders()))
@@ -53,42 +65,75 @@ public class AllegroService {
                 .block();
     }
 
-    public JsonNode createAdvert(JsonNode data, User user) {
-        return AllegroClient.mutate().baseUrl("https://api.allegro.pl").build()
-                .post()
+    public ObjectNode createAdvert(ObjectNode data, User user) {
+        return AllegroClient.post()
                 .uri("/sale/product-offers")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, getUserToken(user))
+                .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
+                .contentType(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .bodyValue(data)
                 .retrieve()
-                .bodyToMono(JsonNode.class)
+                .bodyToMono(ObjectNode.class)
                 .block();
     }
 
     public JsonNode editAllegroOffer(JsonNode data, User user) {
-        return AllegroClient.mutate().baseUrl("https://api.allegro.pl").build()
-                .patch()
+        return AllegroClient.patch()
                 .uri("sale/product-offers")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, getUserToken(user))
+                .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
+                .contentType(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .bodyValue(data)
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block();
     }
 
-    private JsonNode allegroProductSearch(String searchPhrase) {
+    public JsonNode getCategorySuggestion(String suggestion, User user) {
+        return AllegroClient.get()
+                .uri(String.format("sale/matching-categories?name=%s", suggestion))
+                .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+    }
 
-        User user = userRepository.findByEmail("admin@admin.com")
+    public JsonNode allegroProductSearch(String suggestion, String categoryID) {
+
+        User user = userRepository.findByEmail("test@user.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        return AllegroClient.mutate().baseUrl("https://api.allegro.pl").build()
-                .get()
-                .uri(String.format("/sale/products?phrase=%s", searchPhrase))
-                .accept(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, getUserToken(user))
+        return AllegroClient.get()
+                .uri(String.format("/sale/products?phrase=%s&language=pl-PL&category.id=%s", suggestion, categoryID))
+                .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+    }
+
+    public JsonNode getProduct(String ID) {
+        User user = userRepository.findByEmail("test@user.com")
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return AllegroClient.get()
+                .uri(String.format("sale/products/%s", ID))
+                .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+    }
+
+    public JsonNode getParams (String ID) {
+        User user = userRepository.findByEmail("test@user.com")
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return AllegroClient.get()
+                .uri(String.format("sale/categories/%s/parameters", ID))
+                .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block();
@@ -118,7 +163,7 @@ public class AllegroService {
 
                 userTokenCache.put(user.getEmail(), innerTokenMap);
                 userRepository.save(user);
-                return keys.getOlxAccessToken();
+                return keys.getAllegroAccessToken();
             }
             // Data up to date but not in cache
             innerTokenMap.put("cachedToken", keys.getAllegroAccessToken());
@@ -126,19 +171,8 @@ public class AllegroService {
             userTokenCache.put(user.getEmail(), innerTokenMap);
             return keys.getAllegroAccessToken();
         }
-        // User does not have OLX credentials set up
-        return "User needs to be signed in to the OLX Api again";
-    }
-
-    private AllegroTokenResponse updateUserToken(String allegroRefreshToken) {
-        return AllegroClient.post()
-                .uri(String.format("/auth/oauth/token?grant_type=client_credentials?refresh_token=%s", allegroRefreshToken))
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .headers(h -> h.addAll(getAllegroHeaders()))
-                .retrieve()
-                .bodyToMono(AllegroTokenResponse.class)
-                .block();
+        // User does not have Allegro credentials set up
+        return "User needs to be signed in to the Allegro Api again";
     }
 
     // Creating Allegro headers

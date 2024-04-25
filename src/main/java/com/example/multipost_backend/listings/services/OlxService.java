@@ -158,6 +158,7 @@ public class OlxService {
         return jsonData.get("data").get(0).get("id").asText();
     }
 
+    // this needs to be in frontend
     public List<Attrib> getCategoryAttributes(String id) throws JsonProcessingException {
 
         User user = userRepository.findByEmail("admin@admin.com")

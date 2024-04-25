@@ -47,4 +47,5 @@ public class GeneralService {
 
         return "Basic " + encodedCredentials;
     }
+
 }

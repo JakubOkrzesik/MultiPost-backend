@@ -45,13 +45,13 @@ public class ApiAuthController {
             keys = userKeysOptional.get();
             keys.setOlxAccessToken(response.getAccess_token());
             keys.setOlxRefreshToken(response.getRefresh_token());
-            keys.setOlxTokenExpiration(new Date(System.currentTimeMillis() + 1000L * Integer.parseInt(response.getExpires_in())));
+            keys.setOlxTokenExpiration(generalService.calculateExpiration(response.getExpires_in()));
         } else {
             keys = UserAccessKeys
                     .builder()
                     .olxAccessToken(response.getAccess_token())
                     .olxRefreshToken(response.getRefresh_token())
-                    .olxTokenExpiration(new Date(System.currentTimeMillis() + 1000L * Integer.parseInt(response.getExpires_in())))
+                    .olxTokenExpiration(generalService.calculateExpiration(response.getExpires_in()))
                     .user(user)
                     .build();
         }
@@ -75,7 +75,7 @@ public class ApiAuthController {
         if (userKeysOptional.isPresent()) {
             keys = userKeysOptional.get();
             keys.setAllegroAccessToken(response.getAccess_token());
-            keys.setAllegroAccessToken(response.getRefresh_token());
+            keys.setAllegroRefreshToken(response.getRefresh_token());
             keys.setAllegroTokenExpiration(generalService.calculateExpiration(response.getExpires_in()));
 
         } else {
@@ -100,7 +100,7 @@ public class ApiAuthController {
         User user = userRepository.findByEmail("test@user.com")
                 .orElseThrow(() -> new UsernameNotFoundException("user not found"));
 
-        EbayTokenResponse response = ebayService.getUserToken(code);
+        EbayTokenResponse response = ebayService.getEbayToken(code);
 
         UserAccessKeys keys;
 
@@ -111,7 +111,7 @@ public class ApiAuthController {
         if (userKeysOptional.isPresent()) {
             keys = userKeysOptional.get();
             keys.setEbayAccessToken(response.getAccess_token());
-            keys.setEbayAccessToken(response.getRefresh_token());
+            keys.setEbayRefreshToken(response.getRefresh_token());
             keys.setEbayTokenExpiration(generalService.calculateExpiration(response.getExpires_in()));
         } else {
             keys = UserAccessKeys
