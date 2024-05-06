@@ -41,8 +41,9 @@ class OlxServiceTest {
     @Test
     void getCategoryAttributes() throws JsonProcessingException {
         String suggestion = olxService.getCategorySuggestion("Audi A3");
-        List<Attrib> data1 = olxService.getCategoryAttributes(suggestion);
+        System.out.println(suggestion);
+        List<JsonNode> data1 = olxService.getCategoryAttributes(suggestion);
         System.out.println(data1);
-        assertNotNull(data1.toString());
+        assertNotNull(data1);
     }
 }

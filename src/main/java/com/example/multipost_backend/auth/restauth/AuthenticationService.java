@@ -22,7 +22,6 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    private final UserKeysRepository userKeysRepository;
 
     public String register(RegisterRequest request) throws UserAlreadyExistsException {
         if(userRepository.findByEmail(request.getEmail()).isPresent()){
@@ -39,6 +38,8 @@ public class AuthenticationService {
         userRepository.save(user);
 
         return "Your account has been created";
+        // Response is not valid JSON
+        // Weird index values appear when registering
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {

@@ -98,6 +98,5 @@ class AllegroAdvertTest {
 
         JsonNode response = allegroService.createAdvert(json, user);
         System.out.println(response);
-
     }
 }

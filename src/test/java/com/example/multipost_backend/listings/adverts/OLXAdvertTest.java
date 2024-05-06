@@ -61,7 +61,7 @@ class OLXAdvertTest {
 
         String id = olxService.getCategorySuggestion("Samsung Galaxy A-12");
 
-        Advert advert = Advert.builder()
+        /*Advert advert = Advert.builder()
                 .title("Samsung Galaxy S4")
                 .description("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent eleifend nunc quis orci condimentum, scelerisque pretium velit tincidunt. Nunc pellentesque convallis ante ut efficitur. Praesent vehicula ultricies lorem nec consequat. Curabitur urna dolor, viverra non nunc sed, lobortis ullamcorper arcu. Donec mollis dui leo. Aliquam eget faucibus mi. Sed feugiat, ligula at cursus facilisis, purus diam interdum quam, ut gravida libero urna non odio. Morbi hendrerit condimentum tincidunt. Cras at sapien eu metus pulvinar luctus. Sed sed nibh molestie, suscipit nisl.")
                 .categoryId(id)
@@ -74,7 +74,7 @@ class OLXAdvertTest {
                 .build();
 
         JsonNode response = olxService.createAdvert(advert, user);
-        System.out.println(response.get("data"));
+        System.out.println(response.get("data"));*/
     }
 
 

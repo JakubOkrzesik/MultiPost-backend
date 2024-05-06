@@ -10,6 +10,7 @@ import com.example.multipost_backend.listings.services.EbayService;
 import com.example.multipost_backend.listings.services.GeneralService;
 import com.example.multipost_backend.listings.services.OlxService;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.jdi.request.InvalidRequestStateException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ public class AdvertController {
     private final GeneralService generalService;
     private final OlxService olxService;
     private final AllegroService allegroService;
-    private final EbayService ebayService;
+    /*private final EbayService ebayService;*/
 
     @GetMapping("/{id}")
     public ResponseEntity<Listing> getAdvert(@PathVariable Integer id) throws AdvertNotFoundException {
@@ -49,7 +50,7 @@ public class AdvertController {
         return ResponseEntity.ok(listings);
     }
 
-    /*@PostMapping("/create")
+    @PostMapping("/create")
     public ResponseEntity<String> postAdvert(HttpServletRequest request, @RequestBody JsonNode jsonData) throws IOException {
 
         User user = generalService.getUser(request);
@@ -72,8 +73,10 @@ public class AdvertController {
             for (JsonNode platform : platforms) {
                 switch (platform.asText()) {
                     case "OLX" -> {
-                        JsonNode olxData = olxService.createAdvert(jsonData.get("olxData"), user);
-                        listing.setOlxUrl(olxData.get("url").asText());
+                        ObjectNode olxData = (ObjectNode) jsonData.get("olxData");
+                        olxData.put("categoryId", olxService.getCategorySuggestion(olxData.get("title").asText()));
+                        JsonNode olxAdvertResponse = olxService.createAdvert(olxData, user);
+                        listing.setOlxUrl(olxAdvertResponse.get("url").asText());
                         listing.setOlxState(ListingState.ACTIVE);
                     }
                     case "Allegro" -> {
@@ -81,11 +84,11 @@ public class AdvertController {
                         listing.setAllegroUrl(allegroData.get("url").asText());
                         listing.setAllegroState(ListingState.ACTIVE);
                     }
-                    case "Ebay" -> {
+                    /*case "Ebay" -> {
                         JsonNode ebayData = ebayService.createAdvert(jsonData.get("ebayData"), user);
                         listing.setEbayUrl(ebayData.get("url").asText());
                         listing.setEbayState(ListingState.ACTIVE);
-                    }
+                    }*/
                     default -> throw new InvalidRequestStateException("Invalid advert platform: " + platform);
                 }
             }
@@ -94,5 +97,5 @@ public class AdvertController {
         }
 
         return listing;
-    }*/
+    }
 }

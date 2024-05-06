@@ -40,7 +40,7 @@ public class OlxService {
     private final ObjectMapper objectMapper;
 
     // Form content from advert creation is passed as a map
-    public JsonNode createAdvert(Advert newAdvert, User user) {
+    public JsonNode createAdvert(JsonNode newAdvert, User user) {
         return OlxClient.post()
                 .uri("/partner/adverts")
                 .accept(MediaType.APPLICATION_JSON)
@@ -158,8 +158,7 @@ public class OlxService {
         return jsonData.get("data").get(0).get("id").asText();
     }
 
-    // this needs to be in frontend
-    public List<Attrib> getCategoryAttributes(String id) throws JsonProcessingException {
+    public List<JsonNode> getCategoryAttributes(String id) throws JsonProcessingException {
 
         User user = userRepository.findByEmail("admin@admin.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
@@ -176,16 +175,12 @@ public class OlxService {
 
         assert rootNode != null;
 
-        List<Attrib> attribList = new ArrayList<>();
+        List<JsonNode> attribList = new ArrayList<>();
 
         for (JsonNode node : rootNode.get("data")) {
-            String code = node.get("code").asText();
-            String value = node.get("values").get(0).get("code").asText();
-
-            attribList.add(Attrib.builder()
-                    .code(code)
-                    .value(value)
-                    .build());
+            if (node.get("validation").get("required").asBoolean()) {
+                attribList.add(node);
+            }
         }
 
         return attribList;

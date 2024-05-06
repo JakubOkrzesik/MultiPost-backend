@@ -65,7 +65,7 @@ public class AllegroService {
                 .block();
     }
 
-    public ObjectNode createAdvert(ObjectNode data, User user) {
+    public JsonNode createAdvert(JsonNode data, User user) {
         return AllegroClient.post()
                 .uri("/sale/product-offers")
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
