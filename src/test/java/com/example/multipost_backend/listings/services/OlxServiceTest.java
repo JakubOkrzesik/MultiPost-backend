@@ -27,7 +27,8 @@ class OlxServiceTest {
 
     @Test
     void getLocation() throws JsonProcessingException {
-        Location location = olxService.getLocation("50.049683", "19.944544");
+        Location location = olxService.getLocation("49.815012", "18.923237");
+        System.out.println(location);
         assertNotNull(location.getCity_id());
     }
 

@@ -132,10 +132,17 @@ public class OlxService {
 
         JsonNode node = objectMapper.readTree(data).get("data").get(0);
 
-        return Location.builder()
-                .city_id(node.get("city").get("id").asText())
-                .district_id(node.get("district").get("id").asText())
-                .build();
+        JsonNode cityNode = node.get("city");
+        JsonNode districtNode = node.get("district");
+
+        Location.LocationBuilder locationBuilder = Location.builder()
+                .city_id(cityNode.get("id").asText());
+
+        if (districtNode != null && !districtNode.isNull()) {
+            locationBuilder.district_id(districtNode.get("id").asText());
+        }
+
+        return locationBuilder.build();
     }
 
     // Title is provided to extract a category ID
