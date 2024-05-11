@@ -53,6 +53,9 @@ class AllegroAdvertTest {
         System.out.println(response);
     }
 
+    // https://developer.allegro.pl/tutorials/jak-jednym-requestem-wystawic-oferte-powiazana-z-produktem-D7Kj9gw4xFA#jak-wystawic-oferte-z-produktem-za-pomoca-zasobu-sale-product-offers
+    // posting advert guide
+
     @Test
     void advertCreationWithUserParams() {
 

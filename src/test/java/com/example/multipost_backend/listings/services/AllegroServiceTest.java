@@ -26,26 +26,35 @@ class AllegroServiceTest {
 
     @Test
     void getCategorySuggestion() {
-        User user = userRepository.findByEmail("admin@admin.com")
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        System.out.println(allegroService.getCategorySuggestion("Iphone XS Max", user));
+        System.out.println(allegroService.getCategorySuggestion("Audi A3"));
     }
     // f24f824d-6088-4042-8d8e-8d928f06515e
     @Test
     void allegroProductSearch() {
-        JsonNode response = allegroService.allegroProductSearch("Iphone XS Max", "165").get("products");
-        System.out.println(response.get(0));
+        JsonNode response = allegroService.allegroProductSearch("Audi A3", "4031").get("products");
+        System.out.println(response);
+        assertNotNull(response);
     }
 
     @Test
     void allegroProductTest() {
         JsonNode response = allegroService.getProduct("065bb735-4257-44d4-93f6-4f7decc71150");
         System.out.println(response);
+        assertNotNull(response);
     }
 
     @Test
     void getParamsTest() {
         JsonNode response = allegroService.getParams("165");
         System.out.println(response);
+        assertNotNull(response);
+    }
+
+    @Test
+    void getProductByGTIN() {
+        long gtin = 888462600712L;
+        JsonNode response = allegroService.allegroGTINProductSearch(gtin);
+        System.out.println(response);
+        assertNotNull(response);
     }
 }

@@ -20,6 +20,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -89,7 +91,11 @@ public class AllegroService {
                 .block();
     }
 
-    public JsonNode getCategorySuggestion(String suggestion, User user) {
+    public JsonNode getCategorySuggestion(String suggestion) {
+
+        User user = userRepository.findByEmail("admin@admin.com")
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
         return AllegroClient.get()
                 .uri(String.format("sale/matching-categories?name=%s", suggestion))
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
@@ -101,11 +107,29 @@ public class AllegroService {
 
     public JsonNode allegroProductSearch(String suggestion, String categoryID) {
 
+        String url = String.format("/sale/products?phrase=%s&language=pl-PL&category.id=%s", suggestion, categoryID);
+
         User user = userRepository.findByEmail("test@user.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         return AllegroClient.get()
-                .uri(String.format("/sale/products?phrase=%s&language=pl-PL&category.id=%s", suggestion, categoryID))
+                .uri(url)
+                .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+    }
+
+    public JsonNode allegroGTINProductSearch(long GTIN) {
+
+        String url = String.format("/sale/products?phrase=%s&language=pl-PL&mode=GTIN", GTIN);
+
+        User user = userRepository.findByEmail("test@user.com")
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return AllegroClient.get()
+                .uri(url)
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .retrieve()
