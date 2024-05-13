@@ -109,7 +109,7 @@ public class AllegroService {
 
         String url = String.format("/sale/products?phrase=%s&language=pl-PL&category.id=%s", suggestion, categoryID);
 
-        User user = userRepository.findByEmail("test@user.com")
+        User user = userRepository.findByEmail("admin@admin.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         return AllegroClient.get()
@@ -125,7 +125,7 @@ public class AllegroService {
 
         String url = String.format("/sale/products?phrase=%s&language=pl-PL&mode=GTIN", GTIN);
 
-        User user = userRepository.findByEmail("test@user.com")
+        User user = userRepository.findByEmail("admin@admin.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         return AllegroClient.get()
@@ -138,7 +138,7 @@ public class AllegroService {
     }
 
     public JsonNode getProduct(String ID) {
-        User user = userRepository.findByEmail("test@user.com")
+        User user = userRepository.findByEmail("admin@admin.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         return AllegroClient.get()
@@ -151,7 +151,7 @@ public class AllegroService {
     }
 
     public JsonNode getParams (String ID) {
-        User user = userRepository.findByEmail("test@user.com")
+        User user = userRepository.findByEmail("admin@admin.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         return AllegroClient.get()

@@ -26,7 +26,7 @@ class AllegroServiceTest {
 
     @Test
     void getCategorySuggestion() {
-        System.out.println(allegroService.getCategorySuggestion("Audi A3"));
+        System.out.println(allegroService.getCategorySuggestion("Telefon Iphone 12"));
     }
     // f24f824d-6088-4042-8d8e-8d928f06515e
     @Test
