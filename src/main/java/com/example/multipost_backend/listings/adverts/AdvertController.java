@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.jdi.request.InvalidRequestStateException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,14 +51,12 @@ public class AdvertController {
         return ResponseEntity.ok(listings);
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<String> postAdvert(HttpServletRequest request, @RequestBody JsonNode jsonData) throws IOException {
+    @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Listing> postAdvert(HttpServletRequest request, @RequestBody JsonNode jsonData) throws IOException {
 
         User user = generalService.getUser(request);
 
-        listingRepository.save(advertHandler(jsonData, user));
-
-        return ResponseEntity.ok("Advert was successfully added");
+        return ResponseEntity.ok(listingRepository.save(advertHandler(jsonData, user)));
     }
 
     private Listing advertHandler(JsonNode jsonData, User user) throws IOException {

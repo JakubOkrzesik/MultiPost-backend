@@ -19,10 +19,18 @@ public class olxServiceController {
     private final OlxService olxService;
 
     @PostMapping(value = "/attribs", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getCategoryAttributes(@RequestParam("title") String title) throws JsonProcessingException {
-        String catSuggestion = olxService.getCategorySuggestion(title);
-        List<JsonNode> catAttribs = olxService.getCategoryAttributes(catSuggestion);
+    public ResponseEntity<Object> getCategoryAttributes(@RequestParam("categoryID") String categoryID) throws JsonProcessingException {
+        /*String catSuggestion = olxService.getCategorySuggestion(title);
+        if (catSuggestion==null) {
+            return ResponseEntity.badRequest().body("You need to provide a valid title");
+        }*/
+        List<JsonNode> catAttribs = olxService.getCategoryAttributes(categoryID);
         return ResponseEntity.ok(catAttribs);
+    }
+
+    @GetMapping(value = "/category", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getCategorySuggestion(@RequestParam("title") String title) throws JsonProcessingException {
+        return ResponseEntity.ok(olxService.getCategorySuggestion(title));
     }
 
     @PostMapping(value = "/location", produces = MediaType.APPLICATION_JSON_VALUE)
