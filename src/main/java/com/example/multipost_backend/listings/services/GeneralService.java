@@ -19,7 +19,6 @@ public class GeneralService {
     // This service provides quality of life methods that might be needed throughout the app
 
     private final JwtService jwtService;
-    private final UserRepository userRepository;
 
     // Calculates expiration date for tokens
     public Date calculateExpiration(String expiresIn) {
@@ -32,12 +31,9 @@ public class GeneralService {
     }
 
     // Retrieves user email from jwt token
-    public User getUser(HttpServletRequest request) {
-        String jwt = request.getHeader("Authentication").substring(7);
-        String email = jwtService.extractUsername(jwt);
-
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found in database"));
+    public String getUsername(String header) {
+        String jwt = header.substring(7);
+        return jwtService.extractUsername(jwt);
     }
 
     // Returns Base64 encoded credentials needed for client side token retrieval

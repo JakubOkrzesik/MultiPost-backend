@@ -13,14 +13,18 @@ import com.example.multipost_backend.listings.dbmodels.UserKeysRepository;
 import com.example.multipost_backend.listings.ebay.EbayTokenResponse;
 import com.example.multipost_backend.listings.SharedApiModels.GrantCodeResponse;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("api/v1/auth")
+@RequestMapping("api/v1/service_auth")
 @RequiredArgsConstructor
 public class ApiAuthController {
 
@@ -32,9 +36,11 @@ public class ApiAuthController {
     private final GeneralService generalService;
 
     @GetMapping("/olx")
-    public ResponseEntity<String> olxAuth(@RequestParam("code") String code){
-        User user = userRepository.findByEmail("test@user.com")
-                .orElseThrow(() -> new UsernameNotFoundException("user not found"));
+    public ResponseEntity<Map<String, String>> olxAuth(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @RequestParam("code") String code){
+        String email = generalService.getUsername(authHeader);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         GrantCodeResponse response = olxService.getOlxToken(code);
 
         UserAccessKeys keys;
@@ -55,15 +61,11 @@ public class ApiAuthController {
                     .user(user)
                     .build();
         }
-        user.setKeys(keys);
-        userKeysRepository.save(keys);
-        userRepository.save(user);
-
-        return ResponseEntity.ok("OLX authentication successful");
+        return getMapResponseEntity(user, keys);
     }
 
     @GetMapping("/allegro")
-    public ResponseEntity<String> allegroAuth(@RequestParam("code") String code){
+    public ResponseEntity<Map<String, String>> allegroAuth(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @RequestParam("code") String code){
         User user = userRepository.findByEmail("test@user.com")
                 .orElseThrow(() -> new UsernameNotFoundException("user not found"));
         AllegroTokenResponse response = allegroService.getAllegroToken(code);
@@ -87,12 +89,19 @@ public class ApiAuthController {
                     .user(user)
                     .build();
         }
+        return getMapResponseEntity(user, keys);
+    }
+
+    @NotNull
+    private ResponseEntity<Map<String, String>> getMapResponseEntity(User user, UserAccessKeys keys) {
         user.setKeys(keys);
         userKeysRepository.save(keys);
         userRepository.save(user);
 
+        Map<String, String> responseBody = new HashMap<>();
+        responseBody.put("message", "Authentication successful");
 
-        return ResponseEntity.ok("Allegro authentication successful");
+        return ResponseEntity.ok(responseBody);
     }
 
     @GetMapping("/ebay")
