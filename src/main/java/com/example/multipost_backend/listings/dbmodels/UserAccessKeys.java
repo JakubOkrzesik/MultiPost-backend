@@ -1,6 +1,7 @@
 package com.example.multipost_backend.listings.dbmodels;
 
 import com.example.multipost_backend.auth.user.User;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,5 +34,6 @@ public class UserAccessKeys {
     private String ebayRefreshToken;
     private Date ebayTokenExpiration;
     @OneToOne(mappedBy = "keys")
+    @JsonBackReference
     private User user;
 }

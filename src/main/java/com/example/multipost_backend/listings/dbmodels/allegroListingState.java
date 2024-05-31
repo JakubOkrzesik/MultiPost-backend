@@ -1,8 +1,8 @@
 package com.example.multipost_backend.listings.dbmodels;
 
-public enum ListingState {
+public enum allegroListingState {
     ACTIVE,
     INACTIVE,
-    SOLD,
-    ERROR
+    ACTIVATING,
+    ENDED
 }

@@ -2,6 +2,7 @@ package com.example.multipost_backend.auth.user;
 
 import com.example.multipost_backend.listings.dbmodels.Listing;
 import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,9 +31,11 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Listing> listings;
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "keys_id", referencedColumnName = "id")
+    @JsonManagedReference
     private UserAccessKeys keys;
 
     @Override
@@ -63,5 +66,13 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", email='" + email + '\'' +
+                '}';
     }
 }

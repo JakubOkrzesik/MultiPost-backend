@@ -6,6 +6,7 @@ import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.allegro.AllegroTokenRequest;
 import com.example.multipost_backend.listings.allegro.AllegroTokenResponse;
 import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
+import com.example.multipost_backend.listings.dbmodels.allegroListingState;
 import com.example.multipost_backend.listings.olx.OlxTokenResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -13,6 +14,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -67,7 +69,7 @@ public class AllegroService {
                 .block();
     }
 
-    public JsonNode createAdvert(JsonNode data, User user) {
+    public ResponseEntity<JsonNode> createAdvert(JsonNode data, User user) {
         return AllegroClient.post()
                 .uri("/sale/product-offers")
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
@@ -75,7 +77,27 @@ public class AllegroService {
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .bodyValue(data)
                 .retrieve()
-                .bodyToMono(ObjectNode.class)
+                .toEntity(JsonNode.class)
+                .block();
+    }
+
+    // method checks for allegro advert status
+    public JsonNode getAdvertStatus(String locationUrl, User user) {
+        return AllegroClient.mutate().baseUrl(locationUrl).build().get()
+                .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+    }
+
+    public JsonNode getAdvert(String advertId, User user) {
+        return AllegroClient.get()
+                .uri(String.format("sale/product-offers/%s", advertId))
+                .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
+                .retrieve()
+                .bodyToMono(JsonNode.class)
                 .block();
     }
 
@@ -204,6 +226,16 @@ public class AllegroService {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, generalService.getAuthorizationHeader(envService.getALLEGRO_CLIENT_ID(), envService.getALLEGRO_CLIENT_SECRET()));
         return headers;
+    }
+
+    public allegroListingState mapStateToEnum(String state) {
+        return switch (state.toUpperCase()) {
+            case "ACTIVE" -> allegroListingState.ACTIVE;
+            case "INACTIVE" -> allegroListingState.INACTIVE;
+            case "ACTIVATING" -> allegroListingState.ACTIVATING;
+            case "ENDED" -> allegroListingState.ENDED;
+            default -> throw new IllegalArgumentException("Unknown state: " + state);
+        };
     }
 
 }

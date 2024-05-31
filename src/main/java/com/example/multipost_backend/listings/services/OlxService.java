@@ -4,6 +4,8 @@ package com.example.multipost_backend.listings.services;
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
+import com.example.multipost_backend.listings.dbmodels.allegroListingState;
+import com.example.multipost_backend.listings.dbmodels.olxListingState;
 import com.example.multipost_backend.listings.olx.*;
 import com.example.multipost_backend.listings.SharedApiModels.GrantCodeResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -294,6 +296,23 @@ public class OlxService {
                 .retrieve()
                 .bodyToMono(OlxTokenResponse.class)
                 .block();
+    }
+
+    public olxListingState mapStateToEnum(String state) {
+        return switch (state.toUpperCase()) {
+            case "NEW" -> olxListingState.NEW;
+            case "ACTIVE" -> olxListingState.ACTIVE;
+            case "LIMITED" -> olxListingState.LIMITED;
+            case "REMOVED_BY_USER" -> olxListingState.REMOVED_BY_USER;
+            case "OUTDATED" -> olxListingState.OUTDATED;
+            case "UNCONFIRMED" -> olxListingState.UNCONFIRMED;
+            case "UNPAID" -> olxListingState.UNPAID;
+            case "MODERATED" -> olxListingState.MODERATED;
+            case "BLOCKED" -> olxListingState.BLOCKED;
+            case "DISABLED" -> olxListingState.DISABLED;
+            case "REMOVED_BY_MODERATOR" -> olxListingState.REMOVED_BY_MODERATOR;
+            default -> throw new IllegalArgumentException("Unknown state: " + state);
+        };
     }
 
 }

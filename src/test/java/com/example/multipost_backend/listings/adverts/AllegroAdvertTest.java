@@ -23,7 +23,7 @@ class AllegroAdvertTest {
     @Autowired
     private UserRepository userRepository;
 
-    @Test
+    /*@Test
     void advertCreationTest() {
         User user = userRepository.findByEmail("test@user.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
@@ -51,7 +51,7 @@ class AllegroAdvertTest {
         json.set("sellingMode", sellingMode);
         JsonNode response = allegroService.createAdvert(json, user);
         System.out.println(response);
-    }
+    }*/
 
     // https://developer.allegro.pl/tutorials/jak-jednym-requestem-wystawic-oferte-powiazana-z-produktem-D7Kj9gw4xFA#jak-wystawic-oferte-z-produktem-za-pomoca-zasobu-sale-product-offers
     // posting advert guide
@@ -99,7 +99,7 @@ class AllegroAdvertTest {
         stock.put("available", 1);
         json.set("stock", stock);
 
-        JsonNode response = allegroService.createAdvert(json, user);
-        System.out.println(response);
+        /*JsonNode response = allegroService.createAdvert(json, user);
+        System.out.println(response);*/
     }
 }

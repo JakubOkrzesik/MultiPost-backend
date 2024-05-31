@@ -1,6 +1,7 @@
 package com.example.multipost_backend.listings.dbmodels;
 
 import com.example.multipost_backend.auth.user.User;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,16 +19,14 @@ public class Listing {
     @GeneratedValue
     private Integer id;
     private String listingName;
-    private String olxUrl;
-    private String allegroUrl;
-    private String ebayUrl;
+    private String olxId;
+    private String allegroId;
     @Enumerated(EnumType.STRING)
-    private ListingState olxState;
+    private olxListingState olxState;
     @Enumerated(EnumType.STRING)
-    private ListingState allegroState;
-    @Enumerated(EnumType.STRING)
-    private ListingState ebayState;
+    private allegroListingState allegroState;
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonBackReference
     private User user;
 }
