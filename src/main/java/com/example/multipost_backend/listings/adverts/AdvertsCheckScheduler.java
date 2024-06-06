@@ -5,8 +5,8 @@ import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.dbmodels.Listing;
 import com.example.multipost_backend.listings.dbmodels.ListingRepository;
-import com.example.multipost_backend.listings.dbmodels.allegroListingState;
-import com.example.multipost_backend.listings.dbmodels.olxListingState;
+import com.example.multipost_backend.listings.dbmodels.AllegroListingState;
+import com.example.multipost_backend.listings.dbmodels.OlxListingState;
 import com.example.multipost_backend.listings.services.AllegroService;
 import com.example.multipost_backend.listings.services.OlxService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -33,7 +33,7 @@ public class AdvertsCheckScheduler {
     private final ListingRepository listingRepository;
     private static final Logger log = LoggerFactory.getLogger(ScheduledTask.class);
 
-    /*@Scheduled(fixedDelay = 30000)*/
+    @Scheduled(fixedDelay = 30000)
     @Transactional
     @Async
     public void fullAdvertCheckMechanismTest() {
@@ -64,7 +64,7 @@ public class AdvertsCheckScheduler {
                     if (olxAdvertId != null) {
                         JsonNode olxResponse = olxService.getAdvert(olxAdvertId, user);
                         String olxListingState = olxResponse.get("data").get("status").asText();
-                        olxListingState olxListingStateEnum = olxService.mapStateToEnum(olxListingState);
+                        OlxListingState olxListingStateEnum = olxService.mapStateToEnum(olxListingState);
                         if (olxListingStateEnum != listing.getOlxState()) {
                             listing.setOlxState(olxListingStateEnum);
                             listingUpdated = true;
@@ -75,7 +75,7 @@ public class AdvertsCheckScheduler {
                     if (allegroAdvertId != null) {
                         JsonNode allegroResponse = allegroService.getAdvert(allegroAdvertId, user);
                         String allegroAdvertState = allegroResponse.get("publication").get("status").asText();
-                        allegroListingState allegroListingStateEnum = allegroService.mapStateToEnum(allegroAdvertState);
+                        AllegroListingState allegroListingStateEnum = allegroService.mapStateToEnum(allegroAdvertState);
                         if (allegroListingStateEnum != listing.getAllegroState()) {
                             listing.setAllegroState(allegroListingStateEnum);
                             listingUpdated = true;

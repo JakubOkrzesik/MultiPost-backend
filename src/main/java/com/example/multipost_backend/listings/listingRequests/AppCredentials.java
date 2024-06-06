@@ -18,7 +18,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public class AppCredentials {
 
-    private final EbayService ebayService;
+    /*private final EbayService ebayService;*/
     private final AllegroService allegroService;
     private final OlxService olxService;
     private final GeneralService generalService;
@@ -27,47 +27,50 @@ public class AppCredentials {
     private final UserKeysRepository userKeysRepository;
 
 
-    // Getting the application's OLX, Allegro and Ebay credentials on startup. These can be used to access parameters needed to complete
+    // Getting the application's OLX and Allegro credentials on startup. These can be used to access parameters needed to complete
     // the details of a listing like categories, locations etc.
     @PostConstruct
     public void getClientCredentials() {
-        Optional<User> user = userRepository.findByEmail("admin@admin.com");
-        UserAccessKeys newKeys;
-
-        OlxTokenResponse olxResponse = olxService.getApplicationToken();
-        AllegroTokenResponse allegroResponse = allegroService.getClientToken();
-        EbayTokenResponse ebayResponse = ebayService.getClientToken();
 
         String password = envService.getADMIN_PASSWORD();
         if (password == null) {
             throw new IllegalStateException("Admin password not found in environmental variables");
         }
 
-        if (user.isEmpty()) {
-            User newUser = User.builder()
-                    .email("admin@admin.com")
-                    .password(password)
-                    .role(Role.ADMIN)
-                    .build();
-            user = Optional.of(userRepository.save(newUser));
-        }
+        User user = userRepository.findByEmail("admin@admin.com").orElse(
+                User.builder()
+                        .email("admin@admin.com")
+                        .password(password)
+                        .role(Role.ADMIN)
+                        .build()
+        );
 
-        User user1 = user.get();
-        newKeys = user1.getKeys();
 
-        if (newKeys==null) {
+        UserAccessKeys newKeys = user.getKeys();
+
+        if (!(newKeys==null)) {
+            if (generalService.isTokenExpired(newKeys.getOlxTokenExpiration()) || generalService.isTokenExpired(newKeys.getAllegroTokenExpiration())) {
+                OlxTokenResponse olxResponse = olxService.getApplicationToken();
+                AllegroTokenResponse allegroResponse = allegroService.getClientToken();
+                setTokenData(newKeys, olxResponse, allegroResponse);
+            }
+        } else {
             newKeys = UserAccessKeys.builder()
-                    .user(user.get())
+                    .user(user)
                     .build();
+
+            OlxTokenResponse olxResponse = olxService.getApplicationToken();
+            AllegroTokenResponse allegroResponse = allegroService.getClientToken();
+            setTokenData(newKeys, olxResponse, allegroResponse);
         }
 
-        setTokenData(newKeys, olxResponse, allegroResponse, ebayResponse);
-        user1.setKeys(newKeys);
+        user.setKeys(newKeys);
         userKeysRepository.save(newKeys);
-        userRepository.save(user1);
+        userRepository.save(user);
     }
 
-    private void setTokenData(UserAccessKeys keys, OlxTokenResponse olxResponse, AllegroTokenResponse allegroResponse, EbayTokenResponse ebayResponse) {
+    // Sets the new data to keys
+    private void setTokenData(UserAccessKeys keys, OlxTokenResponse olxResponse, AllegroTokenResponse allegroResponse/*, EbayTokenResponse ebayResponse*/) {
         keys.setOlxAccessToken(olxResponse.getAccess_token());
         keys.setOlxRefreshToken(olxResponse.getRefresh_token());
         keys.setOlxTokenExpiration(generalService.calculateExpiration(olxResponse.getExpires_in()));
@@ -76,8 +79,8 @@ public class AppCredentials {
         keys.setAllegroRefreshToken(allegroResponse.getRefresh_token());
         keys.setAllegroTokenExpiration(generalService.calculateExpiration(allegroResponse.getExpires_in()));
 
-        keys.setEbayAccessToken(ebayResponse.getAccess_token());
+        /*keys.setEbayAccessToken(ebayResponse.getAccess_token());
         keys.setEbayRefreshToken(ebayResponse.getRefresh_token());
-        keys.setEbayTokenExpiration(generalService.calculateExpiration(ebayResponse.getExpires_in()));
+        keys.setEbayTokenExpiration(generalService.calculateExpiration(ebayResponse.getExpires_in()));*/
     }
 }

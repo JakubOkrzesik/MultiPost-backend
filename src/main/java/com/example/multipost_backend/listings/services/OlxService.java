@@ -4,26 +4,21 @@ package com.example.multipost_backend.listings.services;
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
-import com.example.multipost_backend.listings.dbmodels.allegroListingState;
-import com.example.multipost_backend.listings.dbmodels.olxListingState;
+import com.example.multipost_backend.listings.dbmodels.OlxListingState;
 import com.example.multipost_backend.listings.olx.*;
 import com.example.multipost_backend.listings.SharedApiModels.GrantCodeResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.http.HttpHeaders;
-import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -57,7 +52,7 @@ public class OlxService {
                 .block();
     }
 
-    public JsonNode getUserAdverts(User user) {
+    /*public JsonNode getUserAdverts(User user) {
         return OlxClient.get()
                 .uri("/partner/adverts")
                 .accept(MediaType.APPLICATION_JSON)
@@ -65,7 +60,7 @@ public class OlxService {
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block();
-    }
+    }*/
 
     public JsonNode getAdvert(String advertID, User user) {
         return OlxClient.get()
@@ -90,7 +85,35 @@ public class OlxService {
     }
 
 
-    public ResponseEntity<Void> changeAdvertStatus(String advertID, String command,User user) {
+    public JsonNode updateAdvertPrice(int newPrice, String advertID, User user) {
+        ObjectNode advert = (ObjectNode) getAdvert(advertID, user).get("data");
+        advert.remove("id");
+        advert.remove("status");
+        advert.remove("url");
+        advert.remove("created_at");
+        advert.remove("activated_at");
+        advert.remove("valid_to");
+        advert.remove("salary");
+
+        if (!advert.get("attributes").isNull()) {
+            JsonNode attributesNode = advert.get("attributes");
+            // Iterate over each attribute object
+            for (JsonNode attributeNode : attributesNode) {
+                // Remove the "values" field from each attribute object otherwise the advert won't pass
+                ((ObjectNode) attributeNode).remove("values");
+            }
+        }
+
+        advert.set("price", objectMapper.valueToTree(Price.builder()
+                .value(newPrice)
+                .negotiable(false)
+                .build()));
+
+        return updateAdvert(advert, advertID, user);
+    }
+
+
+    public ResponseEntity<Void> changeAdvertStatus(String advertID, String command, User user) {
 
         String uri = String.format("/partner/adverts/%s/commands?command", advertID);
 
@@ -99,7 +122,7 @@ public class OlxService {
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
-                .body(fromFormData("command", "deactivate").with("is_success", "false"))
+                .body(fromFormData("command", command).with("is_success", "false"))
                 .retrieve()
                 .toBodilessEntity()
                 .block();
@@ -239,11 +262,21 @@ public class OlxService {
         UserAccessKeys keys = user.getKeys();
         if (keys.getOlxAccessToken() != null) {
             if (generalService.isTokenExpired(keys.getOlxTokenExpiration())) {
-                OlxTokenResponse response = updateUserToken(keys.getOlxRefreshToken());
-                // Updating the database
-                keys.setOlxAccessToken(response.getAccess_token());
-                keys.setOlxRefreshToken(response.getRefresh_token());
-                keys.setOlxTokenExpiration(generalService.calculateExpiration(response.getExpires_in()));
+
+                OlxTokenResponse response;
+
+                if (keys.getAllegroRefreshToken()==null) {
+                    response = getApplicationToken();
+                    keys.setOlxAccessToken(response.getAccess_token());
+                    keys.setOlxTokenExpiration(generalService.calculateExpiration(response.getExpires_in()));
+                } else {
+                    response = updateUserToken(keys.getOlxRefreshToken());
+                    keys.setOlxAccessToken(response.getAccess_token());
+                    keys.setOlxRefreshToken(response.getRefresh_token());
+                    keys.setOlxTokenExpiration(generalService.calculateExpiration(response.getExpires_in()));
+                }
+
+
                 // Updating the cache
 
                 innerTokenMap.put("cachedToken", response.getAccess_token());
@@ -298,19 +331,19 @@ public class OlxService {
                 .block();
     }
 
-    public olxListingState mapStateToEnum(String state) {
+    public OlxListingState mapStateToEnum(String state) {
         return switch (state.toUpperCase()) {
-            case "NEW" -> olxListingState.NEW;
-            case "ACTIVE" -> olxListingState.ACTIVE;
-            case "LIMITED" -> olxListingState.LIMITED;
-            case "REMOVED_BY_USER" -> olxListingState.REMOVED_BY_USER;
-            case "OUTDATED" -> olxListingState.OUTDATED;
-            case "UNCONFIRMED" -> olxListingState.UNCONFIRMED;
-            case "UNPAID" -> olxListingState.UNPAID;
-            case "MODERATED" -> olxListingState.MODERATED;
-            case "BLOCKED" -> olxListingState.BLOCKED;
-            case "DISABLED" -> olxListingState.DISABLED;
-            case "REMOVED_BY_MODERATOR" -> olxListingState.REMOVED_BY_MODERATOR;
+            case "NEW" -> OlxListingState.NEW;
+            case "ACTIVE" -> OlxListingState.ACTIVE;
+            case "LIMITED" -> OlxListingState.LIMITED;
+            case "REMOVED_BY_USER" -> OlxListingState.REMOVED_BY_USER;
+            case "OUTDATED" -> OlxListingState.OUTDATED;
+            case "UNCONFIRMED" -> OlxListingState.UNCONFIRMED;
+            case "UNPAID" -> OlxListingState.UNPAID;
+            case "MODERATED" -> OlxListingState.MODERATED;
+            case "BLOCKED" -> OlxListingState.BLOCKED;
+            case "DISABLED" -> OlxListingState.DISABLED;
+            case "REMOVED_BY_MODERATOR" -> OlxListingState.REMOVED_BY_MODERATOR;
             default -> throw new IllegalArgumentException("Unknown state: " + state);
         };
     }

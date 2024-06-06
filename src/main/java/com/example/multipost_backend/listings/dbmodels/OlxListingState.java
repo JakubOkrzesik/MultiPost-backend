@@ -1,6 +1,6 @@
 package com.example.multipost_backend.listings.dbmodels;
 
-public enum olxListingState {
+public enum OlxListingState {
     NEW,
     ACTIVE,
     LIMITED,

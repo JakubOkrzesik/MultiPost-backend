@@ -83,7 +83,7 @@ class OLXAdvertTest {
         User user = userRepository.findByEmail("test@user.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         // Provide your desired ID
-        String adId = "911458629";
+        String adId = "920445171";
         JsonNode response = olxService.getAdvert(adId, user).get("data");
         System.out.println(response);
         // Checking the mechanism for getting the ad
@@ -117,7 +117,7 @@ class OLXAdvertTest {
         if (attributesNode.isArray()) {
             // Iterate over each attribute object
             for (JsonNode attributeNode : attributesNode) {
-                // Remove the "values" field from each attribute object
+                // Remove the "values" field from each attribute object otherwise the advert won't pass
                 ((ObjectNode) attributeNode).remove("values");
             }
         }
@@ -126,6 +126,16 @@ class OLXAdvertTest {
         JsonNode response2 = olxService.updateAdvert(updatedAd, adId, user).get("data");
 
         assertThat(response2).isNotNull();
+
+    }
+
+    @Test
+    void olxPriceUpdateTest() {
+        User user = userRepository.findByEmail("test@user.com")
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        JsonNode response = olxService.updateAdvertPrice(6900, "920446688", user);
+        System.out.println(response);
 
     }
 

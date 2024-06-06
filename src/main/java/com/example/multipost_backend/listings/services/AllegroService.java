@@ -3,27 +3,22 @@ package com.example.multipost_backend.listings.services;
 
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
-import com.example.multipost_backend.listings.allegro.AllegroTokenRequest;
 import com.example.multipost_backend.listings.allegro.AllegroTokenResponse;
 import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
-import com.example.multipost_backend.listings.dbmodels.allegroListingState;
-import com.example.multipost_backend.listings.olx.OlxTokenResponse;
+import com.example.multipost_backend.listings.dbmodels.AllegroListingState;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -35,6 +30,7 @@ public class AllegroService {
     private final EnvService envService;
     private final Map<String, Map<String, Object>> userTokenCache = new ConcurrentHashMap<>();
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
     public AllegroTokenResponse getAllegroToken(String code) {
         return AllegroClient.mutate().baseUrl("https://allegro.pl.allegrosandbox.pl").build().post() // The allegro api does not work with the .bodyValue method inside webclient or im doing sth wrong (probably the case)
@@ -101,9 +97,9 @@ public class AllegroService {
                 .block();
     }
 
-    public JsonNode editAllegroOffer(JsonNode data, User user) {
+    public JsonNode editAllegroOffer(JsonNode data, String advertId, User user) {
         return AllegroClient.patch()
-                .uri("sale/product-offers")
+                .uri(String.format("sale/product-offers/%s", advertId))
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .contentType(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
@@ -111,6 +107,26 @@ public class AllegroService {
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block();
+    }
+
+    public JsonNode updateAdvertPrice(int newPrice, String allegroId, User user) {
+        ObjectNode updatedAdvertData = objectMapper.createObjectNode();
+        ObjectNode sellingMode = objectMapper.createObjectNode();
+        ObjectNode price = objectMapper.createObjectNode();
+        price.put("amount", newPrice);
+        price.put("currency", "PLN");
+        sellingMode.set("price", price);
+        updatedAdvertData.set("sellingMode", sellingMode);
+        return editAllegroOffer(updatedAdvertData, allegroId, user);
+    }
+
+    public JsonNode changeAdvertStatus(String advertId, AllegroListingState listingState, User user) {
+        ObjectNode updatedAdvertData = objectMapper.createObjectNode();
+        ObjectNode publication = objectMapper.createObjectNode();
+        publication.put("status", listingState.toString());
+        updatedAdvertData.set("publication", publication);
+
+        return editAllegroOffer(updatedAdvertData, advertId, user);
     }
 
     public JsonNode getCategorySuggestion(String suggestion) {
@@ -197,11 +213,22 @@ public class AllegroService {
         UserAccessKeys keys = user.getKeys();
         if (keys.getAllegroAccessToken() != null) {
             if (generalService.isTokenExpired(keys.getAllegroTokenExpiration())) {
-                AllegroTokenResponse response = updateUserToken(keys.getAllegroRefreshToken());
-                // Updating the database
-                keys.setAllegroAccessToken(response.getAccess_token());
-                keys.setAllegroRefreshToken(response.getRefresh_token());
-                keys.setAllegroTokenExpiration(generalService.calculateExpiration(response.getExpires_in()));
+
+                AllegroTokenResponse response;
+
+                // if the refresh token is null it indicates we're dealing with a client token
+                if (keys.getAllegroRefreshToken()==null) {
+                    response = getClientToken();
+                    keys.setAllegroAccessToken(response.getAccess_token());
+                    keys.setAllegroTokenExpiration(generalService.calculateExpiration(response.getExpires_in()));
+                } else {
+                    response = updateUserToken(keys.getAllegroRefreshToken());
+                    // Updating the database
+                    keys.setAllegroAccessToken(response.getAccess_token());
+                    keys.setAllegroRefreshToken(response.getRefresh_token());
+                    keys.setAllegroTokenExpiration(generalService.calculateExpiration(response.getExpires_in()));
+                }
+
                 // Updating the cache
 
                 innerTokenMap.put("cachedToken", response.getAccess_token());
@@ -228,12 +255,12 @@ public class AllegroService {
         return headers;
     }
 
-    public allegroListingState mapStateToEnum(String state) {
+    public AllegroListingState mapStateToEnum(String state) {
         return switch (state.toUpperCase()) {
-            case "ACTIVE" -> allegroListingState.ACTIVE;
-            case "INACTIVE" -> allegroListingState.INACTIVE;
-            case "ACTIVATING" -> allegroListingState.ACTIVATING;
-            case "ENDED" -> allegroListingState.ENDED;
+            case "ACTIVE" -> AllegroListingState.ACTIVE;
+            case "INACTIVE" -> AllegroListingState.INACTIVE;
+            case "ACTIVATING" -> AllegroListingState.ACTIVATING;
+            case "ENDED" -> AllegroListingState.ENDED;
             default -> throw new IllegalArgumentException("Unknown state: " + state);
         };
     }

@@ -16,7 +16,7 @@ public class GlobalCorsConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOrigins(envService.getFRONTEND_URI()) // Allow requests from localhost:4200
-                .allowedMethods("GET", "POST", "PUT", "DELETE") // Allow these HTTP methods
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH") // Allow these HTTP methods
                 .allowedHeaders("*") // Allow all headers
                 .allowCredentials(true); // Allow sending credentials like cookies
     }

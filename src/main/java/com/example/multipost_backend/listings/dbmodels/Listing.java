@@ -22,9 +22,9 @@ public class Listing {
     private String olxId;
     private String allegroId;
     @Enumerated(EnumType.STRING)
-    private olxListingState olxState;
+    private OlxListingState olxState;
     @Enumerated(EnumType.STRING)
-    private allegroListingState allegroState;
+    private AllegroListingState allegroState;
     @ManyToOne
     @JoinColumn(name = "user_id")
     @JsonBackReference

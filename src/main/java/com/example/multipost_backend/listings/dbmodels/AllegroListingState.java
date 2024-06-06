@@ -1,6 +1,6 @@
 package com.example.multipost_backend.listings.dbmodels;
 
-public enum allegroListingState {
+public enum AllegroListingState {
     ACTIVE,
     INACTIVE,
     ACTIVATING,

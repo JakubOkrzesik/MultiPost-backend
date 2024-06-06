@@ -2,6 +2,7 @@ package com.example.multipost_backend.listings.adverts;
 
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
+import com.example.multipost_backend.listings.dbmodels.AllegroListingState;
 import com.example.multipost_backend.listings.services.AllegroService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -101,5 +102,23 @@ class AllegroAdvertTest {
 
         /*JsonNode response = allegroService.createAdvert(json, user);
         System.out.println(response);*/
+    }
+
+    @Test
+    void updatePrice() {
+        User user = userRepository.findByEmail("test@user.com")
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        JsonNode response = allegroService.updateAdvertPrice(6900, "7764007892", user);
+        System.out.println(response);
+    }
+
+    @Test
+    void delistAdvert() {
+        User user = userRepository.findByEmail("test@user.com")
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        JsonNode response = allegroService.changeAdvertStatus("7764007892", AllegroListingState.ENDED, user);
+        System.out.println(response);
     }
 }

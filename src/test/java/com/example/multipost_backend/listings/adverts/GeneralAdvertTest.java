@@ -31,4 +31,14 @@ public class GeneralAdvertTest {
 
         System.out.println(listings);
     }
+
+    @Test
+    void advertDeletionTest() {
+
+    }
+
+    @Test
+    void priceChangeTest() {
+
+    }
 }
