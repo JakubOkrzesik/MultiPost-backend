@@ -15,4 +15,10 @@ services:
     environment:
       spring.datasource.url: 'jdbc:mysql://mysql:3306/mydatabase'
     depends_on:
-      - mysql
+      - 'mysql'
+  frontend:
+    image: 'multipost-frontend'
+    ports:
+      - '4200:4200'
+    depends_on:
+      - 'app'

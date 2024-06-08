@@ -5,6 +5,7 @@ import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
 import com.example.multipost_backend.listings.dbmodels.OlxListingState;
+import com.example.multipost_backend.listings.dbmodels.UserKeysRepository;
 import com.example.multipost_backend.listings.olx.*;
 import com.example.multipost_backend.listings.SharedApiModels.GrantCodeResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -30,6 +31,7 @@ public class OlxService {
 
     private final WebClient OlxClient;
     private final UserRepository userRepository;
+    private final UserKeysRepository userKeysRepository;
     // Cached user tokens are added to HashMap to reduce amount of db queries
     private final Map<String, Map<String, Object>> userTokenCache = new ConcurrentHashMap<>();
     private final EnvService envService;
@@ -283,6 +285,7 @@ public class OlxService {
                 innerTokenMap.put("expDate", generalService.calculateExpiration(response.getExpires_in()));
 
                 userTokenCache.put(user.getEmail(), innerTokenMap);
+                userKeysRepository.save(keys);
                 userRepository.save(user);
                 return keys.getOlxAccessToken();
             }

@@ -4,8 +4,10 @@ package com.example.multipost_backend.listings.services;
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.allegro.AllegroTokenResponse;
+import com.example.multipost_backend.listings.dbmodels.ListingRepository;
 import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
 import com.example.multipost_backend.listings.dbmodels.AllegroListingState;
+import com.example.multipost_backend.listings.dbmodels.UserKeysRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -31,6 +33,7 @@ public class AllegroService {
     private final Map<String, Map<String, Object>> userTokenCache = new ConcurrentHashMap<>();
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
+    private final UserKeysRepository userKeysRepository;
 
     public AllegroTokenResponse getAllegroToken(String code) {
         return AllegroClient.mutate().baseUrl("https://allegro.pl.allegrosandbox.pl").build().post() // The allegro api does not work with the .bodyValue method inside webclient or im doing sth wrong (probably the case)
@@ -235,6 +238,7 @@ public class AllegroService {
                 innerTokenMap.put("expDate", generalService.calculateExpiration(response.getExpires_in()));
 
                 userTokenCache.put(user.getEmail(), innerTokenMap);
+                userKeysRepository.save(keys);
                 userRepository.save(user);
                 return keys.getAllegroAccessToken();
             }
