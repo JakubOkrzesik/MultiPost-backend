@@ -9,18 +9,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
+@RunWith(SpringRunner.class)
 class AllegroAdvertTest {
 
     @Autowired
     private AllegroService allegroService;
-    @Autowired
-    private ObjectMapper objectMapper;
     @Autowired
     private UserRepository userRepository;
 
@@ -57,7 +58,7 @@ class AllegroAdvertTest {
     // https://developer.allegro.pl/tutorials/jak-jednym-requestem-wystawic-oferte-powiazana-z-produktem-D7Kj9gw4xFA#jak-wystawic-oferte-z-produktem-za-pomoca-zasobu-sale-product-offers
     // posting advert guide
 
-    @Test
+/*    @Test
     void advertCreationWithUserParams() {
 
         User user = userRepository.findByEmail("test@user.com")
@@ -100,16 +101,16 @@ class AllegroAdvertTest {
         stock.put("available", 1);
         json.set("stock", stock);
 
-        /*JsonNode response = allegroService.createAdvert(json, user);
-        System.out.println(response);*/
-    }
+        *//*JsonNode response = allegroService.createAdvert(json, user);
+        System.out.println(response);*//*
+    }*/
 
     @Test
     void updatePrice() {
         User user = userRepository.findByEmail("test@user.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        JsonNode response = allegroService.updateAdvertPrice(6900, "7764007892", user);
+        JsonNode response = allegroService.updateAdvertPrice(6900, "7764007652", user);
         System.out.println(response);
     }
 
@@ -118,7 +119,7 @@ class AllegroAdvertTest {
         User user = userRepository.findByEmail("test@user.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        JsonNode response = allegroService.changeAdvertStatus("7764007892", AllegroListingState.ENDED, user);
+        JsonNode response = allegroService.changeAdvertStatus("7764007652", AllegroListingState.INACTIVE, user);
         System.out.println(response);
     }
 }

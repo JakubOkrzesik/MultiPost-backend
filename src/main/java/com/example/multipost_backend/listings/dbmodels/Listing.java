@@ -3,10 +3,7 @@ package com.example.multipost_backend.listings.dbmodels;
 import com.example.multipost_backend.auth.user.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @Builder
@@ -18,9 +15,12 @@ public class Listing {
     @Id
     @GeneratedValue
     private Integer id;
+    @NonNull
     private String listingName;
     private String olxId;
     private String allegroId;
+    private Integer price;
+    private SoldOnEnum soldOn;
     @Enumerated(EnumType.STRING)
     private OlxListingState olxState;
     @Enumerated(EnumType.STRING)

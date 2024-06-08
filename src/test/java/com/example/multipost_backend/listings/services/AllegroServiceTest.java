@@ -4,11 +4,14 @@ import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.jupiter.api.Assertions.*;
+@RunWith(SpringRunner.class)
 @SpringBootTest
 class AllegroServiceTest {
 
@@ -26,7 +29,7 @@ class AllegroServiceTest {
 
     @Test
     void getCategorySuggestion() {
-        System.out.println(allegroService.getCategorySuggestion("Telefon Iphone 12"));
+        assertNotNull(allegroService.getCategorySuggestion("Telefon Iphone 12"));
     }
     // f24f824d-6088-4042-8d8e-8d928f06515e
     @Test

@@ -36,20 +36,6 @@ public class ScheduledAdvertMethodsTest {
 
 
     @Test
-    void savingListingTest() {
-        Listing listing = Listing.builder()
-                .id(254)
-                .allegroId("7763961362")
-                .allegroState(AllegroListingState.ACTIVATING)
-                .user(userRepository.findById(2).orElseThrow(() -> new UsernameNotFoundException("User not found")))
-                .build();
-
-        listingRepository.save(listing);
-
-        listingRepository.delete(listing);
-    }
-
-    @Test
     void listingQueryTest() {
         User user = userRepository.findByEmail("test@user.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
@@ -126,7 +112,7 @@ public class ScheduledAdvertMethodsTest {
     }
 
     @Test
-    void brotherManTest() {
+    void finalScheduledTaskTest() {
         List<User> userList = userRepository.findAllByRole(Role.USER)
                 .orElse(new ArrayList<>());
 

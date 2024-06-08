@@ -3,10 +3,7 @@ package com.example.multipost_backend.listings.adverts;
 
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
-import com.example.multipost_backend.listings.dbmodels.Listing;
-import com.example.multipost_backend.listings.dbmodels.ListingRepository;
-import com.example.multipost_backend.listings.dbmodels.AllegroListingState;
-import com.example.multipost_backend.listings.dbmodels.OlxListingState;
+import com.example.multipost_backend.listings.dbmodels.*;
 import com.example.multipost_backend.listings.listingRequests.ResponseHandler;
 import com.example.multipost_backend.listings.services.AllegroService;
 import com.example.multipost_backend.listings.services.GeneralService;
@@ -71,6 +68,10 @@ public class AdvertController {
                 allegroService.updateAdvertPrice(price, listing.getAllegroId(), user);
             }
 
+            listing.setPrice(price);
+
+            listingRepository.save(listing);
+
             return ResponseHandler.generateResponse("Price of advert changed", HttpStatus.OK, null);
         } catch (Exception e) {
             return ResponseHandler.generateResponse("Internal error while fetching adverts", HttpStatus.INTERNAL_SERVER_ERROR, e);
@@ -109,6 +110,8 @@ public class AdvertController {
             Listing listing = Listing.builder()
                     .listingName(jsonData.get("advert").get("name").asText())
                     .user(user)
+                    .price(jsonData.get("advert").get("price").asInt())
+                    .soldOn(SoldOnEnum.NONE)
                     .build();
 
             JsonNode data = jsonData.get("advert").requireNonNull();
@@ -144,6 +147,11 @@ public class AdvertController {
                         }
 
                     } catch (Exception e) {
+                        // i am so sorry for anyone who has to see this
+                        if (data.get("platforms").get("olxToggle").asBoolean()) {
+                            // finishing the olx advert if the allegro api returns an error
+                            olxService.changeAdvertStatus(listing.getOlxId(), "finish", user);
+                        }
                         return ResponseHandler.generateResponse("Allegro API error", HttpStatus.BAD_REQUEST, e);
                     }
                 }
@@ -176,7 +184,17 @@ public class AdvertController {
 
             if (listing.getOlxId() != null) {
                 try {
-                    olxService.changeAdvertStatus(listing.getOlxId(), "finish", user);
+                    if (listing.getOlxState()==OlxListingState.NEW || listing.getOlxState()==OlxListingState.ACTIVE) {
+                        // if the advert is currently up it needs to get de-listed first and then it could be finished
+                        olxService.changeAdvertStatus(listing.getOlxId(), "deactivate", user);
+                        listing.setOlxState(OlxListingState.REMOVED_BY_USER);
+                    }
+
+                    if (listing.getOlxState()==OlxListingState.LIMITED) {
+                        olxService.changeAdvertStatus(listing.getOlxId(), "finish", user);
+                    }
+
+                    olxService.deleteAdvert(listing.getOlxId(), user);
                 } catch (Exception e) {
                     return ResponseHandler.generateResponse("OLX Api Error", HttpStatus.BAD_REQUEST, e);
                 }

@@ -1,7 +1,9 @@
 package com.example.multipost_backend.auth.restauth;
 
 
+import com.example.multipost_backend.listings.listingRequests.ResponseHandler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 @RestController
@@ -19,5 +21,10 @@ public class AuthenticationController {
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
         return ResponseEntity.ok(authService.authenticate(request));
+    }
+
+    @GetMapping("/siema")
+    public ResponseEntity<Object> siemaControl() {
+        return ResponseHandler.generateResponse("siema", HttpStatus.OK, null);
     }
 }

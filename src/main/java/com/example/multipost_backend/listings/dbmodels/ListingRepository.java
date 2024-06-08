@@ -10,7 +10,5 @@ public interface ListingRepository extends JpaRepository<Listing, Integer> {
 
     Optional<Listing> findById (Integer id);
 
-    Optional<List<Listing>> findAllByUser (User user);
-
     Optional<List<Listing>> findAllByUserId (Integer id);
 }

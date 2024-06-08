@@ -216,7 +216,7 @@ public class AllegroService {
 
                 AllegroTokenResponse response;
 
-                // if the refresh token is null it indicates we're dealing with a client token
+                // check if we're dealing with a user token or an application token
                 if (keys.getAllegroRefreshToken()==null) {
                     response = getClientToken();
                     keys.setAllegroAccessToken(response.getAccess_token());

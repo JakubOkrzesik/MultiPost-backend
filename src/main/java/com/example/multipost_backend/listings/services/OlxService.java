@@ -264,8 +264,8 @@ public class OlxService {
             if (generalService.isTokenExpired(keys.getOlxTokenExpiration())) {
 
                 OlxTokenResponse response;
-
-                if (keys.getAllegroRefreshToken()==null) {
+                // check if we're dealing with a user token or an application token
+                if (keys.getOlxRefreshToken()==null) {
                     response = getApplicationToken();
                     keys.setOlxAccessToken(response.getAccess_token());
                     keys.setOlxTokenExpiration(generalService.calculateExpiration(response.getExpires_in()));

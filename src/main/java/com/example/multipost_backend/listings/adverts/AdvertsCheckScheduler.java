@@ -3,10 +3,7 @@ package com.example.multipost_backend.listings.adverts;
 import com.example.multipost_backend.auth.user.Role;
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
-import com.example.multipost_backend.listings.dbmodels.Listing;
-import com.example.multipost_backend.listings.dbmodels.ListingRepository;
-import com.example.multipost_backend.listings.dbmodels.AllegroListingState;
-import com.example.multipost_backend.listings.dbmodels.OlxListingState;
+import com.example.multipost_backend.listings.dbmodels.*;
 import com.example.multipost_backend.listings.services.AllegroService;
 import com.example.multipost_backend.listings.services.OlxService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -61,27 +58,11 @@ public class AdvertsCheckScheduler {
                 String allegroAdvertId = listing.getAllegroId();
 
                 try {
-                    if (olxAdvertId != null) {
-                        JsonNode olxResponse = olxService.getAdvert(olxAdvertId, user);
-                        String olxListingState = olxResponse.get("data").get("status").asText();
-                        OlxListingState olxListingStateEnum = olxService.mapStateToEnum(olxListingState);
-                        if (olxListingStateEnum != listing.getOlxState()) {
-                            listing.setOlxState(olxListingStateEnum);
-                            listingUpdated = true;
-                            olxCounter++;
-                        }
-                    }
 
-                    if (allegroAdvertId != null) {
-                        JsonNode allegroResponse = allegroService.getAdvert(allegroAdvertId, user);
-                        String allegroAdvertState = allegroResponse.get("publication").get("status").asText();
-                        AllegroListingState allegroListingStateEnum = allegroService.mapStateToEnum(allegroAdvertState);
-                        if (allegroListingStateEnum != listing.getAllegroState()) {
-                            listing.setAllegroState(allegroListingStateEnum);
-                            listingUpdated = true;
-                            allegroCounter++;
-                        }
-                    }
+                    listingUpdated |= olxStatusCheck(olxAdvertId, listing, user);
+                    listingUpdated |= allegroStatusCheck(allegroAdvertId, listing, user);
+
+                    handleCrossPlatformStateConsistency(user, listing);
 
                     if (listingUpdated) {
                         isUpdated = true;
@@ -102,5 +83,49 @@ public class AdvertsCheckScheduler {
             log.info("Number of state changes in Olx for user id {}: {}", user.getId(), olxCounter);
             log.info("Number of state changes in Allegro for user id {}: {}", user.getId(), allegroCounter);
         });
+    }
+
+
+    private boolean olxStatusCheck(String olxAdvertId, Listing listing, User user) {
+        if (olxAdvertId != null) {
+            JsonNode olxResponse = olxService.getAdvert(olxAdvertId, user);
+            String olxListingState = olxResponse.get("data").get("status").asText();
+            OlxListingState olxListingStateEnum = olxService.mapStateToEnum(olxListingState);
+            if (olxListingStateEnum != listing.getOlxState()) {
+                listing.setOlxState(olxListingStateEnum);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean allegroStatusCheck(String allegroAdvertId, Listing listing, User user) {
+        if (allegroAdvertId != null) {
+            JsonNode allegroResponse = allegroService.getAdvert(allegroAdvertId, user);
+            String allegroAdvertState = allegroResponse.get("publication").get("status").asText();
+            AllegroListingState allegroListingStateEnum = allegroService.mapStateToEnum(allegroAdvertState);
+            if (allegroListingStateEnum != listing.getAllegroState()) {
+                listing.setAllegroState(allegroListingStateEnum);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // needs reevaluation logic is wonky
+    private void handleCrossPlatformStateConsistency(User user, Listing listing) {
+        if (listing.getOlxState() == OlxListingState.REMOVED_BY_USER && listing.getAllegroState() != AllegroListingState.ENDED && listing.getAllegroState() != null) {
+            log.info("Product sold on OLX, deactivating Allegro listing...");
+            listing.setSoldOn(SoldOnEnum.OLX);
+            allegroService.changeAdvertStatus(listing.getAllegroId(), AllegroListingState.ENDED, user).toPrettyString();
+        }
+
+        if (listing.getAllegroState() == AllegroListingState.ENDED && listing.getOlxState() != OlxListingState.REMOVED_BY_USER && listing.getOlxState() !=null) {
+            log.info("Product sold on Allegro, deactivating OLX listing...");
+            listing.setSoldOn(SoldOnEnum.ALLEGRO);
+            if (listing.getOlxState() == OlxListingState.NEW || listing.getOlxState() == OlxListingState.ACTIVE) {
+                olxService.changeAdvertStatus(listing.getOlxId(), "deactivate", user);
+            }
+        }
     }
 }
