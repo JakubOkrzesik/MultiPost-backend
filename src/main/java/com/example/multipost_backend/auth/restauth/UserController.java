@@ -3,6 +3,7 @@ package com.example.multipost_backend.auth.restauth;
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
+import com.example.multipost_backend.listings.dbmodels.UserKeysRepository;
 import com.example.multipost_backend.listings.listingRequests.ResponseHandler;
 import com.example.multipost_backend.listings.services.GeneralService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import java.util.Map;
 public class UserController {
     private final UserRepository userRepository;
     private final GeneralService generalService;
+    private final UserKeysRepository userKeysRepository;
 
     @GetMapping("/get")
     public ResponseEntity<Object> getUserDetails(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
@@ -33,7 +35,11 @@ public class UserController {
             User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-            UserAccessKeys keys = user.getKeys();
+            UserAccessKeys keys = userKeysRepository.findByUser(user).orElseGet(() -> {
+                UserAccessKeys newKeys = UserAccessKeys.builder().build();
+                userKeysRepository.save(newKeys);
+                return newKeys;
+            });
 
             Map<String, Object> userDetails = new HashMap<>();
             userDetails.put("email", user.getEmail());

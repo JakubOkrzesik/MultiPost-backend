@@ -38,8 +38,6 @@ public class AuthenticationService {
         userRepository.save(user);
 
         return "Your account has been created";
-        // Response is not valid JSON
-        // Weird index values appear when registering
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {

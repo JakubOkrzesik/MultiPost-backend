@@ -14,8 +14,11 @@ import com.example.multipost_backend.listings.ebay.EbayTokenResponse;
 import com.example.multipost_backend.listings.SharedApiModels.GrantCodeResponse;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.config.ScheduledTask;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import java.util.Date;
@@ -34,6 +37,7 @@ public class ApiAuthController {
     private final EbayService ebayService;
     private final AllegroService allegroService;
     private final GeneralService generalService;
+    private static final Logger log = LoggerFactory.getLogger(ApiAuthController.class);
 
     @GetMapping("/olx")
     public ResponseEntity<Map<String, String>> olxAuth(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @RequestParam("code") String code){
@@ -66,10 +70,13 @@ public class ApiAuthController {
 
     @GetMapping("/allegro")
     public ResponseEntity<Map<String, String>> allegroAuth(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @RequestParam("code") String code){
-        User user = userRepository.findByEmail("test@user.com")
-                .orElseThrow(() -> new UsernameNotFoundException("user not found"));
-        AllegroTokenResponse response = allegroService.getAllegroToken(code);
+        String email = generalService.getUsername(authHeader);
 
+        log.info("Japierdole");
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        AllegroTokenResponse response = allegroService.getAllegroToken(code);
         UserAccessKeys keys;
 
         Optional<UserAccessKeys> userKeysOptional = userKeysRepository.findByUser(user);

@@ -14,8 +14,8 @@ public class AuthenticationController {
     private final AuthenticationService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest request) throws UserAlreadyExistsException {
-        return ResponseEntity.ok(authService.register(request));
+    public ResponseEntity<Object> register(@RequestBody RegisterRequest request) throws UserAlreadyExistsException {
+        return ResponseHandler.generateResponse(authService.register(request), HttpStatus.OK, null);
     }
 
     @PostMapping("/authenticate")
@@ -23,8 +23,4 @@ public class AuthenticationController {
         return ResponseEntity.ok(authService.authenticate(request));
     }
 
-    @GetMapping("/siema")
-    public ResponseEntity<Object> siemaControl() {
-        return ResponseHandler.generateResponse("siema", HttpStatus.OK, null);
-    }
 }

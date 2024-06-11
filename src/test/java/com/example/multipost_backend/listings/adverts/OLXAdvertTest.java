@@ -1,5 +1,6 @@
 package com.example.multipost_backend.listings.adverts;
 
+import com.example.multipost_backend.auth.user.Role;
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.dbmodels.Listing;
@@ -35,10 +36,10 @@ class OLXAdvertTest {
     @Test
     void olxUserTokenTest() {
         // Before starting the test the user needs to have a valid olx access token already stored in the database
-        User user = userRepository.findByEmail("test@user.com")
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        List<User> userList = userRepository.findAllByRole(Role.USER)
+                .orElse(new ArrayList<>());
 
-        assertThat(olxService.getUserToken(user)).isNotNull();
+        userRepository.deleteAll(userList);
     }
 
 

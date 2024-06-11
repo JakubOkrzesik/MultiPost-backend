@@ -4,40 +4,50 @@ import com.example.multipost_backend.auth.user.Role;
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.allegro.AllegroTokenResponse;
-import com.example.multipost_backend.listings.services.*;
 import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
 import com.example.multipost_backend.listings.dbmodels.UserKeysRepository;
-import com.example.multipost_backend.listings.ebay.EbayTokenResponse;
 import com.example.multipost_backend.listings.olx.OlxTokenResponse;
+import com.example.multipost_backend.listings.services.AllegroService;
+import com.example.multipost_backend.listings.services.EnvService;
+import com.example.multipost_backend.listings.services.GeneralService;
+import com.example.multipost_backend.listings.services.OlxService;
 import jakarta.annotation.PostConstruct;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
-import java.util.Optional;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-@Component
-@AllArgsConstructor
-public class AppCredentials {
+import static org.junit.jupiter.api.Assertions.*;
 
-    /*private final EbayService ebayService;*/
-    private final AllegroService allegroService;
-    private final OlxService olxService;
-    private final GeneralService generalService;
-    private final EnvService envService;
-    private final UserRepository userRepository;
-    private final UserKeysRepository userKeysRepository;
+@SpringBootTest
+class AppCredentialsTest {
 
+    @Autowired
+    private AllegroService allegroService;
+    @Autowired
+    private OlxService olxService;
+    @Autowired
+    private GeneralService generalService;
+    @Autowired
+    private EnvService envService;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private UserKeysRepository userKeysRepository;
 
-    // Getting the application's OLX and Allegro credentials on startup. These can be used to access parameters needed to complete
-    // the details of a listing like categories, locations etc.
-    @PostConstruct
-    public void getClientCredentials() {
+    @Test
+    public void getClientCredentialswithNoAdminUser() {
+
+        User user = userRepository.findByEmail("admin@admin.com").orElseThrow(() -> new UsernameNotFoundException("Username not found"));
+
+        userRepository.delete(user);
 
         String password = envService.getADMIN_PASSWORD();
         if (password == null) {
             throw new IllegalStateException("Admin password not found in environmental variables");
         }
 
-        User user = userRepository.findByEmail("admin@admin.com").orElse(
+        User user1 = userRepository.findByEmail("admin@admin.com").orElse(
                 User.builder()
                         .email("admin@admin.com")
                         .password(password)
@@ -46,7 +56,7 @@ public class AppCredentials {
         );
 
 
-        UserAccessKeys newKeys = user.getKeys();
+        UserAccessKeys newKeys = user1.getKeys();
 
         if (!(newKeys==null)) {
             if (generalService.isTokenExpired(newKeys.getOlxTokenExpiration()) || generalService.isTokenExpired(newKeys.getAllegroTokenExpiration())) {
@@ -56,7 +66,7 @@ public class AppCredentials {
             }
         } else {
             newKeys = UserAccessKeys.builder()
-                    .user(user)
+                    .user(user1)
                     .build();
 
             OlxTokenResponse olxResponse = olxService.getApplicationToken();
@@ -64,8 +74,8 @@ public class AppCredentials {
             setTokenData(newKeys, olxResponse, allegroResponse);
         }
 
-        user.setKeys(newKeys);
-        userRepository.save(user);
+        user1.setKeys(newKeys);
+        userRepository.save(user1);
         userKeysRepository.save(newKeys);
     }
 
