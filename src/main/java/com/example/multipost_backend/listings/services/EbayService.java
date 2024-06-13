@@ -1,3 +1,4 @@
+
 package com.example.multipost_backend.listings.services;
 
 
@@ -26,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 @AllArgsConstructor
 public class EbayService {
-
+/*
     private final WebClient EbayClient;
     private final EnvService envService;
     private final GeneralService generalService;
@@ -97,6 +98,7 @@ public class EbayService {
     // Required - format(FIXED_PRICE), marketplaceId, SKU value (item value from inventory)
 
     // This method checks if the user has set up the fulfillment, payment and return policies for their account
+*/
 /*
     public String ebayPolicyCheck(String userToken) {
         if (getPaymentPolicy(userToken).get("total").asInt()==0) {
@@ -151,10 +153,12 @@ public class EbayService {
     private ObjectNode createReturnPolicy(String userToken) {
 
     }
-*/
+*//*
 
 
-    public String getUserToken(User user) {
+
+    */
+/*public String getUserToken(User user) {
         // Check if user is in cache and if the token is expired
         Map<String, Object> tokenData = userTokenCache.get(user.getEmail());
         if (tokenData != null && generalService.isTokenExpired((Date) tokenData.get("expDate"))) {
@@ -187,8 +191,9 @@ public class EbayService {
             return keys.getEbayAccessToken();
         }
         // User does not have Ebay credentials set up
-        return "User needs to be signed in to the Allegro Api again";
-    }
+        return "User needs to be signed in to the Ebay Api again";
+    }*//*
+
 
     private JsonNode updateUserToken(String ebayRefreshToken) {
 
@@ -219,5 +224,6 @@ public class EbayService {
         headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + userToken);
 
         return headers;
-    }
+    }*/
 }
+

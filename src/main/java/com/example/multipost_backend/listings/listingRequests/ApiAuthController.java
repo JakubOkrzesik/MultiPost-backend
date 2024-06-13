@@ -5,12 +5,10 @@ import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.allegro.AllegroTokenResponse;
 import com.example.multipost_backend.listings.services.AllegroService;
-import com.example.multipost_backend.listings.services.EbayService;
 import com.example.multipost_backend.listings.services.GeneralService;
 import com.example.multipost_backend.listings.services.OlxService;
 import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
 import com.example.multipost_backend.listings.dbmodels.UserKeysRepository;
-import com.example.multipost_backend.listings.ebay.EbayTokenResponse;
 import com.example.multipost_backend.listings.SharedApiModels.GrantCodeResponse;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -18,10 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.config.ScheduledTask;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -34,7 +30,7 @@ public class ApiAuthController {
     private final UserRepository userRepository;
     private final UserKeysRepository userKeysRepository;
     private final OlxService olxService;
-    private final EbayService ebayService;
+    /*private final EbayService ebayService;*/
     private final AllegroService allegroService;
     private final GeneralService generalService;
     private static final Logger log = LoggerFactory.getLogger(ApiAuthController.class);
@@ -71,8 +67,6 @@ public class ApiAuthController {
     @GetMapping("/allegro")
     public ResponseEntity<Map<String, String>> allegroAuth(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @RequestParam("code") String code){
         String email = generalService.getUsername(authHeader);
-
-        log.info("Japierdole");
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
@@ -111,7 +105,7 @@ public class ApiAuthController {
         return ResponseEntity.ok(responseBody);
     }
 
-    @GetMapping("/ebay")
+    /*@GetMapping("/ebay")
     public ResponseEntity<String> ebayAuth(@RequestParam("code") String code){
         User user = userRepository.findByEmail("test@user.com")
                 .orElseThrow(() -> new UsernameNotFoundException("user not found"));
@@ -143,6 +137,6 @@ public class ApiAuthController {
         userRepository.save(user);
 
         return ResponseEntity.ok("Ebay authorization successful");
-    }
+    }*/
 
 }

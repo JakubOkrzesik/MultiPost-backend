@@ -147,7 +147,6 @@ public class AdvertController {
                         }
 
                     } catch (Exception e) {
-                        // i am so sorry for anyone who has to see this
                         if (data.get("platforms").get("olxToggle").asBoolean()) {
                             // finishing the olx advert if the allegro api returns an error
                             olxService.changeAdvertStatus(listing.getOlxId(), "finish", user);

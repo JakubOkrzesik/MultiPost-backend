@@ -27,6 +27,7 @@ public class UserController {
     private final GeneralService generalService;
     private final UserKeysRepository userKeysRepository;
 
+    // super dumb request could be resolved by adding claims to the JWT token NEEDS FIXING
     @GetMapping("/get")
     public ResponseEntity<Object> getUserDetails(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
         try {
