@@ -43,8 +43,8 @@ public class UserController {
             });
 
             Map<String, Object> userDetails = new HashMap<>();
-            userDetails.put("email", user.getEmail());
-            userDetails.put("isOLXAuth", (keys.getOlxAccessToken() != null));
+            userDetails.put("name", user.getFirstName());
+            userDetails.put("isOlxAuth", (keys.getOlxAccessToken() != null));
             userDetails.put("isAllegroAuth", (keys.getAllegroAccessToken() != null));
 
             return ResponseHandler.generateResponse("User retrieved", HttpStatus.OK, userDetails);

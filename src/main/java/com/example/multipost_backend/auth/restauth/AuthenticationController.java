@@ -15,12 +15,20 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     public ResponseEntity<Object> register(@RequestBody RegisterRequest request) throws UserAlreadyExistsException {
-        return ResponseHandler.generateResponse(authService.register(request), HttpStatus.OK, null);
+        try {
+            return ResponseHandler.generateResponse(authService.register(request), HttpStatus.OK, null);
+        } catch (Exception e) {
+            return ResponseHandler.generateResponse("Registration unsuccessful", HttpStatus.OK, e);
+        }
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
-        return ResponseEntity.ok(authService.authenticate(request));
+    public ResponseEntity<Object> authenticate(@RequestBody AuthenticationRequest request) {
+        try {
+            return ResponseEntity.ok(authService.authenticate(request));
+        } catch (Exception e) {
+            return ResponseHandler.generateResponse("Email or password are incorrect", HttpStatus.OK, e);
+        }
     }
 
 }
