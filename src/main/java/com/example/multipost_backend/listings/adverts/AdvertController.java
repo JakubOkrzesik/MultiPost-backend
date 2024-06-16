@@ -151,7 +151,7 @@ public class AdvertController {
                             // finishing the olx advert if the allegro api returns an error
                             olxService.changeAdvertStatus(listing.getOlxId(), "finish", user);
                         }
-                        return ResponseHandler.generateResponse("Allegro API error", HttpStatus.BAD_REQUEST, e);
+                        return ResponseHandler.generateResponse("Allegro API error", HttpStatus.INTERNAL_SERVER_ERROR, e);
                     }
                 }
             } else {

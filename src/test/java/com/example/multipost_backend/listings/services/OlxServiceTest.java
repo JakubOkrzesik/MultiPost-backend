@@ -2,17 +2,23 @@ package com.example.multipost_backend.listings.services;
 
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
-import com.example.multipost_backend.listings.olx.Attrib;
 import com.example.multipost_backend.listings.olx.Location;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 class OlxServiceTest {
@@ -20,21 +26,9 @@ class OlxServiceTest {
     @Autowired
     private OlxService olxService;
     @Autowired
-    private GeneralService generalService;
-    @Autowired
     private UserRepository userRepository;
-
-    /*@Test
-    void getUser() {
-        String email = generalService.getUsername("Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0QHVzZXIuY29tIiwiaWF0IjoxNzE1ODEwMjk3LCJleHAiOjE3MTU4OTY2OTd9.EWloIdAs7Yh47VsFybtbWA0j7QgpA4x8xovKGCO32WU");
-        System.out.println(email);
-
-        System.out.println(user);
-    }*/
-
-    @Test
-    void testGetAdvert() {
-    }
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     void getLocation() throws JsonProcessingException {
@@ -46,8 +40,7 @@ class OlxServiceTest {
     @Test
     void getCategorySuggestion() throws JsonProcessingException {
         String suggestion = olxService.getCategorySuggestion("Audi A3");
-        System.out.println(suggestion);
-        assertNotNull(suggestion);
+        assertEquals(182, Integer.parseInt(suggestion));
     }
 
     @Test
@@ -55,7 +48,33 @@ class OlxServiceTest {
         String suggestion = olxService.getCategorySuggestion("Audi A3");
         System.out.println(suggestion);
         List<JsonNode> data1 = olxService.getCategoryAttributes(suggestion);
+        List<JsonNode> emptyList = new ArrayList<>();
         System.out.println(data1);
-        assertNotNull(data1);
+        assertNotEquals(emptyList, data1);
+    }
+
+    @Test
+    void olxPriceUpdateTest() {
+        User user = userRepository.findByEmail("test@user.com")
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        JsonNode response = olxService.updateAdvertPrice(6900, "925323675", user);
+        ObjectNode emptyNode = objectMapper.createObjectNode();
+        assertNotEquals(emptyNode, response);
+    }
+
+    @Test
+    void olxAdvertDeletionTest() {
+
+        User user = userRepository.findByEmail("test@user.com")
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        // Provide your desired ID
+        String adId = "923733586";
+        String command = "finish";
+
+        ResponseEntity<Void> statusChangeResponse = olxService.changeAdvertStatus(adId, command, user);
+        System.out.println(statusChangeResponse);
+        assertThat(statusChangeResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
     }
 }

@@ -20,8 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.http.HttpHeaders;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.springframework.web.reactive.function.BodyInserters.fromFormData;
 
@@ -32,8 +33,6 @@ public class OlxService {
     private final WebClient OlxClient;
     private final UserRepository userRepository;
     private final UserKeysRepository userKeysRepository;
-    // Cached user tokens are added to HashMap to reduce amount of db queries
-    private final Map<String, Map<String, Object>> userTokenCache = new ConcurrentHashMap<>();
     private final EnvService envService;
     private final GeneralService generalService;
     private final ObjectMapper objectMapper;
@@ -54,15 +53,6 @@ public class OlxService {
                 .block();
     }
 
-    /*public JsonNode getUserAdverts(User user) {
-        return OlxClient.get()
-                .uri("/partner/adverts")
-                .accept(MediaType.APPLICATION_JSON)
-                .headers(h -> h.addAll(getUserHeaders(user)))
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
-    }*/
 
     public JsonNode getAdvert(String advertID, User user) {
         return OlxClient.get()
@@ -254,12 +244,6 @@ public class OlxService {
     // with the refresh token to update the user token
     public String getUserToken(User user) {
         // Check if user is in cache and if the token is expired
-        Map<String, Object> tokenData = userTokenCache.get(user.getEmail());
-        if (tokenData != null && generalService.isTokenExpired((Date) tokenData.get("expDate"))) {
-            return (String) tokenData.get("cachedToken");
-        }
-
-        Map<String, Object> innerTokenMap = new ConcurrentHashMap<>();
 
         UserAccessKeys keys = user.getKeys();
         if (keys.getOlxAccessToken() != null) {
@@ -278,21 +262,11 @@ public class OlxService {
                     keys.setOlxTokenExpiration(generalService.calculateExpiration(response.getExpires_in()));
                 }
 
-
-                // Updating the cache
-
-                innerTokenMap.put("cachedToken", response.getAccess_token());
-                innerTokenMap.put("expDate", generalService.calculateExpiration(response.getExpires_in()));
-
-                userTokenCache.put(user.getEmail(), innerTokenMap);
                 userKeysRepository.save(keys);
+                user.setKeys(keys);
                 userRepository.save(user);
                 return keys.getOlxAccessToken();
             }
-            // Data up to date but not in cache
-            innerTokenMap.put("cachedToken", keys.getOlxAccessToken());
-            innerTokenMap.put("expDate", keys.getOlxTokenExpiration());
-            userTokenCache.put(user.getEmail(), innerTokenMap);
             return keys.getOlxAccessToken();
         }
         // User does not have OLX credentials set up

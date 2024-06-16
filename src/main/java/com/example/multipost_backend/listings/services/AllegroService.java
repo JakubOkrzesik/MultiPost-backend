@@ -4,7 +4,6 @@ package com.example.multipost_backend.listings.services;
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.allegro.AllegroTokenResponse;
-import com.example.multipost_backend.listings.dbmodels.ListingRepository;
 import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
 import com.example.multipost_backend.listings.dbmodels.AllegroListingState;
 import com.example.multipost_backend.listings.dbmodels.UserKeysRepository;
@@ -19,10 +18,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 @Service
 @AllArgsConstructor
 public class AllegroService {
@@ -30,7 +25,6 @@ public class AllegroService {
     private final WebClient AllegroClient;
     private final GeneralService generalService;
     private final EnvService envService;
-    private final Map<String, Map<String, Object>> userTokenCache = new ConcurrentHashMap<>();
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
     private final UserKeysRepository userKeysRepository;
@@ -205,13 +199,6 @@ public class AllegroService {
     }
 
     public String getUserToken(User user) {
-        // Check if user is in cache and if the token is expired
-        Map<String, Object> tokenData = userTokenCache.get(user.getEmail());
-        if (tokenData != null && generalService.isTokenExpired((Date) tokenData.get("expDate"))) {
-            return (String) tokenData.get("cachedToken");
-        }
-
-        Map<String, Object> innerTokenMap = new ConcurrentHashMap<>();
 
         UserAccessKeys keys = user.getKeys();
         if (keys.getAllegroAccessToken() != null) {
@@ -232,20 +219,12 @@ public class AllegroService {
                     keys.setAllegroTokenExpiration(generalService.calculateExpiration(response.getExpires_in()));
                 }
 
-                // Updating the cache
-
-                innerTokenMap.put("cachedToken", response.getAccess_token());
-                innerTokenMap.put("expDate", generalService.calculateExpiration(response.getExpires_in()));
-
-                userTokenCache.put(user.getEmail(), innerTokenMap);
                 userKeysRepository.save(keys);
+                user.setKeys(keys);
                 userRepository.save(user);
                 return keys.getAllegroAccessToken();
             }
-            // Data up to date but not in cache
-            innerTokenMap.put("cachedToken", keys.getAllegroAccessToken());
-            innerTokenMap.put("expDate", keys.getAllegroTokenExpiration());
-            userTokenCache.put(user.getEmail(), innerTokenMap);
+
             return keys.getAllegroAccessToken();
         }
         // User does not have Allegro credentials set up

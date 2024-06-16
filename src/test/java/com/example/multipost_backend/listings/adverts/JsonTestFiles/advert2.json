@@ -1,0 +1,43 @@
+{
+  "advert": {
+    "name": "Iphone 12 64GB okazja",
+    "price": 5000,
+    "platforms": {
+      "olxToggle": false,
+      "allegroToggle": true
+    },
+    "allegroData": {
+      "productSet": [
+        {
+          "product": {
+            "id": "4acd87a1-a1f9-47f2-8144-f8ce37fba30a",
+            "images": [
+              "https://i.imgur.com/cqTIiYC.jpeg"
+            ],
+            "parameters": []
+          }
+        }
+      ],
+      "name": "Iphone 12 64GB okazja",
+      "parameters": [
+        {
+          "id": "11323",
+          "valuesIds": [
+            "11323_1"
+          ],
+          "values": [],
+          "rangeValue": null
+        }
+      ],
+      "sellingMode": {
+        "price": {
+          "amount": 5000,
+          "currency": "PLN"
+        }
+      },
+      "stock": {
+        "available": 1
+      }
+    }
+  }
+}

@@ -114,22 +114,25 @@ public class AdvertsCheckScheduler {
         return false;
     }
 
-    // needs reevaluation logic is wonky
     private void handleCrossPlatformStateConsistency(User user, Listing listing) {
-        if (listing.getOlxState() == OlxListingState.REMOVED_BY_USER && listing.getAllegroState() != AllegroListingState.ENDED && listing.getAllegroState() != null) {
-            log.info("Product sold on OLX, deactivating Allegro listing...");
-            listing.setSoldOn(SoldOnEnum.OLX);
-            allegroService.changeAdvertStatus(listing.getAllegroId(), AllegroListingState.ENDED, user);
-        }
-
-        if (listing.getAllegroState() == AllegroListingState.ENDED && listing.getOlxState() != OlxListingState.REMOVED_BY_USER && listing.getOlxState() !=null) {
-            log.info("Product sold on Allegro, deactivating OLX listing...");
-            listing.setSoldOn(SoldOnEnum.ALLEGRO);
-            // listing that is posted or is about to be posted must be first deactivated, then finished
-            if (listing.getOlxState() == OlxListingState.NEW || listing.getOlxState() == OlxListingState.ACTIVE) {
-                olxService.changeAdvertStatus(listing.getOlxId(), "deactivate", user);
+        if (listing.getSoldOn()==SoldOnEnum.NONE){
+            if (listing.getOlxState() == OlxListingState.REMOVED_BY_USER && listing.getAllegroState() != AllegroListingState.ENDED) {
+                listing.setSoldOn(SoldOnEnum.OLX);
+                if (listing.getAllegroState() != null) {
+                    log.info("Product sold on OLX, deactivating Allegro listing...");
+                    allegroService.changeAdvertStatus(listing.getAllegroId(), AllegroListingState.ENDED, user);
+                }
             }
-            olxService.changeAdvertStatus(listing.getOlxId(), "finish", user);
+
+            if (listing.getAllegroState() == AllegroListingState.ENDED && listing.getOlxState() != OlxListingState.REMOVED_BY_USER) {
+                listing.setSoldOn(SoldOnEnum.ALLEGRO);
+                // listing that is posted or is about to be posted must be first deactivated, then finished
+                if (listing.getOlxState() != null && (listing.getOlxState() == OlxListingState.NEW || listing.getOlxState() == OlxListingState.ACTIVE)) {
+                    log.info("Product sold on Allegro, deactivating OLX listing...");
+                    olxService.changeAdvertStatus(listing.getOlxId(), "deactivate", user);
+                    olxService.changeAdvertStatus(listing.getOlxId(), "finish", user);
+                }
+            }
         }
     }
 }

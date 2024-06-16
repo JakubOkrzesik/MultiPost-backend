@@ -1,0 +1,72 @@
+{
+  "advert": {
+    "name": "Iphone 12 64GB okazja",
+    "price": 5000,
+    "platforms": {
+      "olxToggle": true,
+      "allegroToggle": true
+    },
+    "allegroData": {
+      "productSet": [
+        {
+          "product": {
+            "id": "4acd87a1-a1f9-47f2-8144-f8ce37fba30a",
+            "images": [
+              "https://i.imgur.com/cqTIiYC.jpeg"
+            ],
+            "parameters": []
+          }
+        }
+      ],
+      "name": "Iphone 12 64GB okazja",
+      "parameters": [
+        {
+          "id": "11323",
+          "valuesIds": [
+            "11323_1"
+          ],
+          "values": [],
+          "rangeValue": null
+        }
+      ],
+      "sellingMode": {
+        "price": {
+          "amount": 5000,
+          "currency": "PLN"
+        }
+      },
+      "stock": {
+        "available": 1
+      }
+    },
+    "olxData": {
+      "title": "Iphone 12 64GB okazja",
+      "description": "'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).",
+      "category_id": 2298,
+      "advertiser_type": "private",
+      "contact": {
+        "name": "Jan Kowalski"
+      },
+      "location": {
+        "city_id": "59837",
+        "district_id": null
+      },
+      "images": [
+        {
+          "url": "https://i.imgur.com/cqTIiYC.jpeg"
+        }
+      ],
+      "price": {
+        "value": 5000,
+        "currency": "PLN",
+        "negotiable": false
+      },
+      "attributes": [
+        {
+          "code": "state",
+          "value": "new"
+        }
+      ]
+    }
+  }
+}
