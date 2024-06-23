@@ -4,5 +4,5 @@ Backend for MultiPost - an app enabling its users to post and manage multiple li
 ## Technologies used
 Spring Boot, Apis of Olx and Allegro, MySQL, Amazon EC2, Docker
 ## Relevant links
-[App link](http://54.93.68.225:4200/)\
+[App hosted on AWS](http://54.93.68.225:4200/)\
 [Frontend github repo](https://github.com/JakubOkrzesik/MultiPost-frontend)
