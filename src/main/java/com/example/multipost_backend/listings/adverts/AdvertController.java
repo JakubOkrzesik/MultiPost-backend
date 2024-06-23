@@ -74,6 +74,7 @@ public class AdvertController {
 
             return ResponseHandler.generateResponse("Price of advert changed", HttpStatus.OK, null);
         } catch (Exception e) {
+            logger.error(String.valueOf(e));
             return ResponseHandler.generateResponse("Internal error while fetching adverts", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
     }
@@ -94,6 +95,7 @@ public class AdvertController {
 
             return ResponseEntity.ok(listings);
         } catch(Exception e) {
+            logger.error(String.valueOf(e));
            return ResponseHandler.generateResponse("Internal error while fetching adverts", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
     }
@@ -124,6 +126,7 @@ public class AdvertController {
                         listing.setOlxId(olxAdvertResponse.get("id").asText());
                         listing.setOlxState(OlxListingState.NEW);
                     } catch (Exception e) {
+                        logger.error(String.valueOf(e));
                         return ResponseHandler.generateResponse("OLX API error", HttpStatus.BAD_REQUEST, e);
                     }
                 }
@@ -151,6 +154,7 @@ public class AdvertController {
                             // finishing the olx advert if the allegro api returns an error
                             olxService.changeAdvertStatus(listing.getOlxId(), "finish", user);
                         }
+                        logger.error(String.valueOf(e));
                         return ResponseHandler.generateResponse("Allegro API error", HttpStatus.INTERNAL_SERVER_ERROR, e);
                     }
                 }
@@ -163,6 +167,7 @@ public class AdvertController {
             return ResponseHandler.generateResponse("Advert successfully posted", HttpStatus.OK, null);
 
         } catch (Exception e) {
+            logger.error(String.valueOf(e));
             return ResponseHandler.generateResponse("Internal error while posting advert", HttpStatus.INTERNAL_SERVER_ERROR, null);
         }
     }
@@ -183,7 +188,7 @@ public class AdvertController {
 
             if (listing.getOlxId() != null) {
                 try {
-                    if (listing.getOlxState()==OlxListingState.NEW || listing.getOlxState()==OlxListingState.ACTIVE) {
+                    if (listing.getOlxState()==OlxListingState.ACTIVE) {
                         // if the advert is currently up it needs to get de-listed first and then it could be finished
                         olxService.changeAdvertStatus(listing.getOlxId(), "deactivate", user);
                         listing.setOlxState(OlxListingState.REMOVED_BY_USER);
@@ -195,6 +200,7 @@ public class AdvertController {
 
                     olxService.deleteAdvert(listing.getOlxId(), user);
                 } catch (Exception e) {
+                    logger.error(String.valueOf(e));
                     return ResponseHandler.generateResponse("OLX Api Error", HttpStatus.BAD_REQUEST, e);
                 }
             }
@@ -203,6 +209,7 @@ public class AdvertController {
                 try {
                     allegroService.changeAdvertStatus(listing.getAllegroId(), AllegroListingState.ENDED, user);
                 } catch (Exception e) {
+                    logger.error(String.valueOf(e));
                     return ResponseHandler.generateResponse("Allegro Api Error", HttpStatus.BAD_REQUEST, e);
                 }
             }
@@ -211,6 +218,7 @@ public class AdvertController {
 
             return ResponseHandler.generateResponse("Deleted advert successfully", HttpStatus.OK, null);
         } catch (Exception e) {
+            logger.error(String.valueOf(e));
             return ResponseHandler.generateResponse("Internal error while processing your request", HttpStatus.INTERNAL_SERVER_ERROR, null);
         }
     }
