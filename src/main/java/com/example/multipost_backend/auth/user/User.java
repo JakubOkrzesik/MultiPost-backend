@@ -1,7 +1,7 @@
 package com.example.multipost_backend.auth.user;
 
-import com.example.multipost_backend.listings.dbmodels.Listing;
-import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
+import com.example.multipost_backend.listings.dbModels.Listing;
+import com.example.multipost_backend.listings.dbModels.UserAccessKeys;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

@@ -1,4 +1,4 @@
-package com.example.multipost_backend.listings.SharedApiModels;
+package com.example.multipost_backend.listings.sharedApiModels;
 
 
 import lombok.AllArgsConstructor;

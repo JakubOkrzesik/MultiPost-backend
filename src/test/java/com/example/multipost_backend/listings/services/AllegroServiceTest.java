@@ -2,9 +2,7 @@ package com.example.multipost_backend.listings.services;
 
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
-import com.example.multipost_backend.listings.adverts.AdvertNotFoundException;
-import com.example.multipost_backend.listings.dbmodels.AllegroListingState;
-import com.example.multipost_backend.listings.dbmodels.ListingRepository;
+import com.example.multipost_backend.listings.dbModels.AllegroListingState;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;

@@ -3,11 +3,11 @@ package com.example.multipost_backend.listings.services;
 
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
-import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
-import com.example.multipost_backend.listings.dbmodels.OlxListingState;
-import com.example.multipost_backend.listings.dbmodels.UserKeysRepository;
+import com.example.multipost_backend.listings.dbModels.UserAccessKeys;
+import com.example.multipost_backend.listings.dbModels.OlxListingState;
+import com.example.multipost_backend.listings.dbModels.UserKeysRepository;
 import com.example.multipost_backend.listings.olx.*;
-import com.example.multipost_backend.listings.SharedApiModels.GrantCodeResponse;
+import com.example.multipost_backend.listings.sharedApiModels.GrantCodeResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

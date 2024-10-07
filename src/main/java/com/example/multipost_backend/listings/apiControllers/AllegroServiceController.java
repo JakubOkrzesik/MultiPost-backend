@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("api/v1/allegro")
 @RequiredArgsConstructor
-public class allegroServiceController {
+public class AllegroServiceController {
     private final AllegroService allegroService;
     private final GeneralService generalService;
     private final UserRepository userRepository;

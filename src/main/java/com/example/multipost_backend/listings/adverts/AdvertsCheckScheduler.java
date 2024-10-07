@@ -3,7 +3,7 @@ package com.example.multipost_backend.listings.adverts;
 import com.example.multipost_backend.auth.user.Role;
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
-import com.example.multipost_backend.listings.dbmodels.*;
+import com.example.multipost_backend.listings.dbModels.*;
 import com.example.multipost_backend.listings.services.AllegroService;
 import com.example.multipost_backend.listings.services.OlxService;
 import com.fasterxml.jackson.databind.JsonNode;

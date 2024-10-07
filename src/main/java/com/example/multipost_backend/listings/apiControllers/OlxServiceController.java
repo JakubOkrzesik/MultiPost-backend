@@ -8,7 +8,6 @@ import com.example.multipost_backend.listings.services.OlxService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("api/v1/olx")
 @RequiredArgsConstructor
-public class olxServiceController {
+public class OlxServiceController {
     private final OlxService olxService;
     private final GeneralService generalService;
     private final UserRepository userRepository;

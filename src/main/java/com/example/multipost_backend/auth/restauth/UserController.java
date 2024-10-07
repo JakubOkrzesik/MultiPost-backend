@@ -2,8 +2,8 @@ package com.example.multipost_backend.auth.restauth;
 
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
-import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
-import com.example.multipost_backend.listings.dbmodels.UserKeysRepository;
+import com.example.multipost_backend.listings.dbModels.UserAccessKeys;
+import com.example.multipost_backend.listings.dbModels.UserKeysRepository;
 import com.example.multipost_backend.listings.listingRequests.ResponseHandler;
 import com.example.multipost_backend.listings.services.GeneralService;
 import lombok.RequiredArgsConstructor;

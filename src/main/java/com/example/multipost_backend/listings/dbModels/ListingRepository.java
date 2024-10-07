@@ -1,4 +1,4 @@
-package com.example.multipost_backend.listings.dbmodels;
+package com.example.multipost_backend.listings.dbModels;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;

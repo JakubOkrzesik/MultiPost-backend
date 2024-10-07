@@ -5,14 +5,12 @@ import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.allegro.AllegroTokenResponse;
 import com.example.multipost_backend.listings.services.*;
-import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
-import com.example.multipost_backend.listings.dbmodels.UserKeysRepository;
-import com.example.multipost_backend.listings.ebay.EbayTokenResponse;
+import com.example.multipost_backend.listings.dbModels.UserAccessKeys;
+import com.example.multipost_backend.listings.dbModels.UserKeysRepository;
 import com.example.multipost_backend.listings.olx.OlxTokenResponse;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import java.util.Optional;
 
 @Component
 @AllArgsConstructor

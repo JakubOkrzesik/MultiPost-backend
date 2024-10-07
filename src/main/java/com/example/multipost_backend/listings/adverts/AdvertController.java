@@ -3,14 +3,13 @@ package com.example.multipost_backend.listings.adverts;
 
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
-import com.example.multipost_backend.listings.dbmodels.*;
+import com.example.multipost_backend.listings.dbModels.*;
 import com.example.multipost_backend.listings.listingRequests.ResponseHandler;
 import com.example.multipost_backend.listings.services.AllegroService;
 import com.example.multipost_backend.listings.services.GeneralService;
 import com.example.multipost_backend.listings.services.OlxService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.jdi.request.InvalidRequestStateException;
 import lombok.RequiredArgsConstructor;

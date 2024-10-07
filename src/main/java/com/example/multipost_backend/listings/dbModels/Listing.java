@@ -1,4 +1,4 @@
-package com.example.multipost_backend.listings.dbmodels;
+package com.example.multipost_backend.listings.dbModels;
 
 import com.example.multipost_backend.auth.user.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;

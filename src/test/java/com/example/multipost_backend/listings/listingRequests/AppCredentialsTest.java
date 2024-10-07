@@ -4,20 +4,17 @@ import com.example.multipost_backend.auth.user.Role;
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.allegro.AllegroTokenResponse;
-import com.example.multipost_backend.listings.dbmodels.UserAccessKeys;
-import com.example.multipost_backend.listings.dbmodels.UserKeysRepository;
+import com.example.multipost_backend.listings.dbModels.UserAccessKeys;
+import com.example.multipost_backend.listings.dbModels.UserKeysRepository;
 import com.example.multipost_backend.listings.olx.OlxTokenResponse;
 import com.example.multipost_backend.listings.services.AllegroService;
 import com.example.multipost_backend.listings.services.EnvService;
 import com.example.multipost_backend.listings.services.GeneralService;
 import com.example.multipost_backend.listings.services.OlxService;
-import jakarta.annotation.PostConstruct;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class AppCredentialsTest {
