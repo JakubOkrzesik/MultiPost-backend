@@ -4,7 +4,7 @@ import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.dbModels.UserAccessKeys;
 import com.example.multipost_backend.listings.dbModels.UserKeysRepository;
-import com.example.multipost_backend.listings.listingRequests.ResponseHandler;
+import com.example.multipost_backend.listings.services.ResponseHandlerService;
 import com.example.multipost_backend.listings.services.GeneralService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -26,6 +26,7 @@ public class UserController {
     private final UserRepository userRepository;
     private final GeneralService generalService;
     private final UserKeysRepository userKeysRepository;
+    private final ResponseHandlerService responseHandler;
 
     // super dumb request could be resolved by adding claims to the JWT token NEEDS FIXING
     @GetMapping("/get")
@@ -47,10 +48,10 @@ public class UserController {
             userDetails.put("isOlxAuth", (keys.getOlxAccessToken() != null));
             userDetails.put("isAllegroAuth", (keys.getAllegroAccessToken() != null));
 
-            return ResponseHandler.generateResponse("User retrieved", HttpStatus.OK, userDetails);
+            return responseHandler.generateResponse("User retrieved", HttpStatus.OK, userDetails);
 
         } catch (Exception e) {
-            return ResponseHandler.generateResponse("Internal error while processing your request", HttpStatus.INTERNAL_SERVER_ERROR, e);
+            return responseHandler.generateResponse("Internal error while processing your request", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
     }
 }

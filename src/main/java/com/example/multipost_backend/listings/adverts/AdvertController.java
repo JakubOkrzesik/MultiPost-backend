@@ -4,7 +4,7 @@ package com.example.multipost_backend.listings.adverts;
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.dbModels.*;
-import com.example.multipost_backend.listings.listingRequests.ResponseHandler;
+import com.example.multipost_backend.listings.services.ResponseHandlerService;
 import com.example.multipost_backend.listings.services.AllegroService;
 import com.example.multipost_backend.listings.services.GeneralService;
 import com.example.multipost_backend.listings.services.OlxService;
@@ -34,6 +34,7 @@ public class AdvertController {
     private final AllegroService allegroService;
     private final UserRepository userRepository;
     private final ListingRepository listingRepository;
+    private final ResponseHandlerService responseHandler;
     private static final Logger logger = LoggerFactory.getLogger(AdvertController.class);
 
     @GetMapping("/{id}")
@@ -48,12 +49,7 @@ public class AdvertController {
     public ResponseEntity<Object> changeAdvertPrice(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @PathVariable Integer id, @RequestParam("newprice") int price) throws AdvertNotFoundException, JsonProcessingException {
 
         try {
-            String email = generalService.getUsername(authHeader);
-            logger.info("Extracted email: {}", email);
-
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-            logger.info("Found user: {}", user);
+            User user = findUserByAuthHeaderEmail(authHeader);
 
             Listing listing = listingRepository.findById(id)
                     .orElseThrow(() -> new AdvertNotFoundException("Advert with the provided ID does not exist"));
@@ -71,22 +67,17 @@ public class AdvertController {
 
             listingRepository.save(listing);
 
-            return ResponseHandler.generateResponse("Price of advert changed", HttpStatus.OK, null);
+            return responseHandler.generateResponse("Price of advert changed", HttpStatus.OK, null);
         } catch (Exception e) {
             logger.error(String.valueOf(e));
-            return ResponseHandler.generateResponse("Internal error while fetching adverts", HttpStatus.INTERNAL_SERVER_ERROR, e);
+            return responseHandler.generateResponse("Internal error while fetching adverts", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
     }
 
     @GetMapping(value = "/user_adverts", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getAdverts(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) throws NoUserAdvertsFoundException {
         try {
-            String email = generalService.getUsername(authHeader);
-            logger.info("Extracted email: {}", email);
-
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-            logger.info("Found user: {}", user);
+            User user = findUserByAuthHeaderEmail(authHeader);
 
             List<Listing> listings = listingRepository.findAllByUserId(user.getId())
                     .orElseThrow(() -> new NoUserAdvertsFoundException("User has no adverts"));
@@ -95,7 +86,7 @@ public class AdvertController {
             return ResponseEntity.ok(listings);
         } catch(Exception e) {
             logger.error(String.valueOf(e));
-           return ResponseHandler.generateResponse("Internal error while fetching adverts", HttpStatus.INTERNAL_SERVER_ERROR, e);
+           return responseHandler.generateResponse("Internal error while fetching adverts", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
     }
 
@@ -103,10 +94,7 @@ public class AdvertController {
     public ResponseEntity<Object> postAdvert(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @RequestBody JsonNode jsonData) {
 
         try {
-            String email = generalService.getUsername(authHeader);
-
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            User user = findUserByAuthHeaderEmail(authHeader);
 
             Listing listing = Listing.builder()
                     .listingName(jsonData.get("advert").get("name").asText())
@@ -126,7 +114,7 @@ public class AdvertController {
                         listing.setOlxState(OlxListingState.NEW);
                     } catch (Exception e) {
                         logger.error(String.valueOf(e));
-                        return ResponseHandler.generateResponse("OLX API error", HttpStatus.BAD_REQUEST, e);
+                        return responseHandler.generateResponse("OLX API error", HttpStatus.BAD_REQUEST, e);
                     }
                 }
 
@@ -154,7 +142,7 @@ public class AdvertController {
                             olxService.changeAdvertStatus(listing.getOlxId(), "finish", user);
                         }
                         logger.error(String.valueOf(e));
-                        return ResponseHandler.generateResponse("Allegro API error", HttpStatus.INTERNAL_SERVER_ERROR, e);
+                        return responseHandler.generateResponse("Allegro API error", HttpStatus.INTERNAL_SERVER_ERROR, e);
                     }
                 }
             } else {
@@ -163,23 +151,19 @@ public class AdvertController {
 
             listingRepository.save(listing);
 
-            return ResponseHandler.generateResponse("Advert successfully posted", HttpStatus.OK, null);
+            return responseHandler.generateResponse("Advert successfully posted", HttpStatus.OK, null);
 
         } catch (Exception e) {
             logger.error(String.valueOf(e));
-            return ResponseHandler.generateResponse("Internal error while posting advert", HttpStatus.INTERNAL_SERVER_ERROR, null);
+            return responseHandler.generateResponse("Internal error while posting advert", HttpStatus.INTERNAL_SERVER_ERROR, null);
         }
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Object> deleteAdvert(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @PathVariable int id) throws AdvertNotFoundException {
         try {// advert will be deleted from database and delisted on allegro and olx
-            String email = generalService.getUsername(authHeader);
-            logger.info("Extracted email: {}", email);
 
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-            logger.info("Found user: {}", user);
+            User user = findUserByAuthHeaderEmail(authHeader);
 
             Listing listing = listingRepository.findById(id)
                     .orElseThrow(() -> new AdvertNotFoundException("Advert with the provided ID does not exist"));
@@ -200,7 +184,7 @@ public class AdvertController {
                     olxService.deleteAdvert(listing.getOlxId(), user);
                 } catch (Exception e) {
                     logger.error(String.valueOf(e));
-                    return ResponseHandler.generateResponse("OLX Api Error", HttpStatus.BAD_REQUEST, e);
+                    return responseHandler.generateResponse("OLX Api Error", HttpStatus.BAD_REQUEST, e);
                 }
             }
 
@@ -209,17 +193,28 @@ public class AdvertController {
                     allegroService.changeAdvertStatus(listing.getAllegroId(), AllegroListingState.ENDED, user);
                 } catch (Exception e) {
                     logger.error(String.valueOf(e));
-                    return ResponseHandler.generateResponse("Allegro Api Error", HttpStatus.BAD_REQUEST, e);
+                    return responseHandler.generateResponse("Allegro Api Error", HttpStatus.BAD_REQUEST, e);
                 }
             }
 
             listingRepository.delete(listing);
 
-            return ResponseHandler.generateResponse("Deleted advert successfully", HttpStatus.OK, null);
+            return responseHandler.generateResponse("Deleted advert successfully", HttpStatus.OK, null);
         } catch (Exception e) {
             logger.error(String.valueOf(e));
-            return ResponseHandler.generateResponse("Internal error while processing your request", HttpStatus.INTERNAL_SERVER_ERROR, null);
+            return responseHandler.generateResponse("Internal error while processing your request", HttpStatus.INTERNAL_SERVER_ERROR, null);
         }
+    }
+
+    private User findUserByAuthHeaderEmail(String authHeader){
+        String email = generalService.getUsername(authHeader);
+        logger.info("Extracted email: {}", email);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        logger.info("Found user: {}", user);
+
+        return user;
     }
 
 }

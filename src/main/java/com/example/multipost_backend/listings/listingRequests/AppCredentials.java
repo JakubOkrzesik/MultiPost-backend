@@ -51,6 +51,10 @@ public class AppCredentials {
                 OlxTokenResponse olxResponse = olxService.getApplicationToken();
                 AllegroTokenResponse allegroResponse = allegroService.getClientToken();
                 setTokenData(newKeys, olxResponse, allegroResponse);
+
+                user.setKeys(newKeys);
+                userRepository.save(user);
+                userKeysRepository.save(newKeys);
             }
         } else {
             newKeys = UserAccessKeys.builder()
@@ -60,11 +64,11 @@ public class AppCredentials {
             OlxTokenResponse olxResponse = olxService.getApplicationToken();
             AllegroTokenResponse allegroResponse = allegroService.getClientToken();
             setTokenData(newKeys, olxResponse, allegroResponse);
-        }
 
-        user.setKeys(newKeys);
-        userRepository.save(user);
-        userKeysRepository.save(newKeys);
+            user.setKeys(newKeys);
+            userRepository.save(user);
+            userKeysRepository.save(newKeys);
+        }
     }
 
     // Sets the new data to keys

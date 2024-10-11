@@ -27,13 +27,15 @@ class AllegroServiceTest {
     void getCategorySuggestion() {
         JsonNode response = allegroService.getCategorySuggestion("Telefon Iphone 12");
         ArrayNode array = objectMapper.createArrayNode();
+        System.out.println(response);
         assertNotEquals(array, response);
     }
 
     @Test
     void allegroProductSearch() {
-        JsonNode response = allegroService.allegroProductSearch("Iphone 12 telefon", "165").get("products");
+        JsonNode response = allegroService.allegroProductSearch("Iphone 12 telefon", "165");
         ArrayNode array = objectMapper.createArrayNode();
+        System.out.println(response);
         assertNotEquals(array, response);
     }
 
@@ -41,6 +43,7 @@ class AllegroServiceTest {
     void allegroProductTest() {
         JsonNode response = allegroService.getProduct("065bb735-4257-44d4-93f6-4f7decc71150");
         ArrayNode array = objectMapper.createArrayNode();
+        System.out.println(response);
         assertNotEquals(array, response);
     }
 
@@ -77,5 +80,14 @@ class AllegroServiceTest {
         JsonNode response = allegroService.changeAdvertStatus("7767839558", AllegroListingState.ENDED, user);
         ObjectNode array = objectMapper.createObjectNode();
         assertNotEquals(array, response);
+    }
+
+    @Test
+    void getUserAdverts() {
+        User user = userRepository.findByEmail("test@user.com")
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        JsonNode response = allegroService.getAdverts(user);
+        System.out.println(response);
     }
 }

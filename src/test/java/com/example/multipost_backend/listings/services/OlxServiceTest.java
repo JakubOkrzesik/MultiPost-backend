@@ -1,12 +1,12 @@
 package com.example.multipost_backend.listings.services;
 
+import com.example.multipost_backend.MultiPostBackendApplication;
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.olx.Location;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-@SpringBootTest
+@SpringBootTest(classes = MultiPostBackendApplication.class)
 class OlxServiceTest {
 
     @Autowired
@@ -75,6 +75,14 @@ class OlxServiceTest {
         ResponseEntity<Void> statusChangeResponse = olxService.changeAdvertStatus(adId, command, user);
         System.out.println(statusChangeResponse);
         assertThat(statusChangeResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+    }
 
+    @Test
+    void getUserAdverts() {
+        User user = userRepository.findByEmail("test@user.com")
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        JsonNode response = olxService.getAdverts(user);
+        System.out.println(response);
     }
 }

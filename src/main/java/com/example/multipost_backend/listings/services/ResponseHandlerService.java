@@ -1,13 +1,15 @@
-package com.example.multipost_backend.listings.listingRequests;
+package com.example.multipost_backend.listings.services;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class ResponseHandler {
-    public static ResponseEntity<Object> generateResponse(String message, HttpStatus status, Object responseObj) {
+@Service
+public class ResponseHandlerService {
+    public ResponseEntity<Object> generateResponse(String message, HttpStatus status, Object responseObj) {
         Map<String, Object> map = new HashMap<>();
         map.put("message", message);
         map.put("status", status.value());

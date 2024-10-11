@@ -22,6 +22,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 @AllArgsConstructor
 public class AllegroService {
 
+    // Consists mostly of requests made to the Allegro API and helper functions
+
     private final WebClient AllegroClient;
     private final GeneralService generalService;
     private final EnvService envService;
@@ -74,7 +76,7 @@ public class AllegroService {
                 .block();
     }
 
-    // method checks for allegro advert status
+    /* method checks for allegro advert status
     public JsonNode getAdvertStatus(String locationUrl, User user) {
         return AllegroClient.mutate().baseUrl(locationUrl).build().get()
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
@@ -82,11 +84,21 @@ public class AllegroService {
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block();
-    }
+    }*/
 
     public JsonNode getAdvert(String advertId, User user) {
         return AllegroClient.get()
                 .uri(String.format("sale/product-offers/%s", advertId))
+                .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+    }
+
+    public JsonNode getAdverts(User user) {
+        return AllegroClient.get()
+                .uri("sale/offers")
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .retrieve()
@@ -237,7 +249,7 @@ public class AllegroService {
         headers.set(HttpHeaders.AUTHORIZATION, generalService.getAuthorizationHeader(envService.getALLEGRO_CLIENT_ID(), envService.getALLEGRO_CLIENT_SECRET()));
         return headers;
     }
-
+    // Mapping current state of an Allegro advert
     public AllegroListingState mapStateToEnum(String state) {
         return switch (state.toUpperCase()) {
             case "ACTIVE" -> AllegroListingState.ACTIVE;

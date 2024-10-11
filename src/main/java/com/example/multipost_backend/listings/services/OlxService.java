@@ -30,6 +30,8 @@ import static org.springframework.web.reactive.function.BodyInserters.fromFormDa
 @AllArgsConstructor
 public class OlxService {
 
+    // Consists mostly of requests made to the OLX API and helper functions
+
     private final WebClient OlxClient;
     private final UserRepository userRepository;
     private final UserKeysRepository userKeysRepository;
@@ -37,7 +39,7 @@ public class OlxService {
     private final GeneralService generalService;
     private final ObjectMapper objectMapper;
 
-    // Form content from advert creation is passed as a map
+    // constant usage of JsonNode needs evaluation
     public JsonNode createAdvert(JsonNode newAdvert, User user) {
         return OlxClient.post()
                 .uri("/partner/adverts")
@@ -64,6 +66,16 @@ public class OlxService {
                 .block();
     }
 
+    public JsonNode getAdverts(User user) {
+        return OlxClient.get()
+                .uri("/partner/adverts")
+                .accept(MediaType.APPLICATION_JSON)
+                .headers(h -> h.addAll(getUserHeaders(user)))
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+    }
+
     public JsonNode updateAdvert(ObjectNode updatedAdvert, String advertID, User user) {
         return OlxClient.put()
                 .uri(String.format("/partner/adverts/%s", advertID))
@@ -76,7 +88,8 @@ public class OlxService {
                 .block();
     }
 
-
+    // needs reevaluation
+    // map to advert object and map the unneeded parts to a generic which then could be deleted??
     public JsonNode updateAdvertPrice(int newPrice, String advertID, User user) {
         ObjectNode advert = (ObjectNode) getAdvert(advertID, user).get("data");
         advert.remove("id");
@@ -121,8 +134,8 @@ public class OlxService {
     }
 
 
-    public ResponseEntity<Void> deleteAdvert(String advertID, User user) {
-        return OlxClient.delete()
+    public void deleteAdvert(String advertID, User user) {
+        OlxClient.delete()
                 .uri(String.format("/partner/adverts/%s", advertID))
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
@@ -182,7 +195,7 @@ public class OlxService {
         return jsonData.get("data").get(0).get("id").asText();
     }
 
-    public List<JsonNode> getCategoryAttributes(String id) throws JsonProcessingException {
+    public List<JsonNode> getCategoryAttributes(String id) {
 
         User user = userRepository.findByEmail("admin@admin.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
