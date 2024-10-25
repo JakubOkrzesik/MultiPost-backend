@@ -4,6 +4,8 @@ import com.example.multipost_backend.auth.user.Role;
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.dbModels.*;
+import com.example.multipost_backend.listings.olx.OlxObjectWrapperClass;
+import com.example.multipost_backend.listings.olx.advertClasses.SimplifiedOlxAdvert;
 import com.example.multipost_backend.listings.services.AllegroService;
 import com.example.multipost_backend.listings.services.OlxService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -90,8 +92,8 @@ public class AdvertsCheckScheduler {
 
     private boolean olxStatusCheck(String olxAdvertId, Listing listing, User user) {
         if (olxAdvertId != null) {
-            JsonNode olxResponse = olxService.getAdvert(olxAdvertId, user);
-            String olxListingState = olxResponse.get("data").get("status").asText();
+            OlxObjectWrapperClass<SimplifiedOlxAdvert> olxResponse = olxService.getSimpleAdvert(olxAdvertId, user);
+            String olxListingState = olxResponse.getData().getStatus();
             OlxListingState olxListingStateEnum = olxService.mapStateToEnum(olxListingState);
             if (olxListingStateEnum != listing.getOlxState()) {
                 listing.setOlxState(olxListingStateEnum);

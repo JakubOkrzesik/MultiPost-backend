@@ -6,7 +6,7 @@ import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.allegro.AllegroTokenResponse;
 import com.example.multipost_backend.listings.dbModels.UserAccessKeys;
 import com.example.multipost_backend.listings.dbModels.UserKeysRepository;
-import com.example.multipost_backend.listings.olx.OlxTokenResponse;
+import com.example.multipost_backend.listings.olx.authentication.OlxTokenResponse;
 import com.example.multipost_backend.listings.services.AllegroService;
 import com.example.multipost_backend.listings.services.EnvService;
 import com.example.multipost_backend.listings.services.GeneralService;

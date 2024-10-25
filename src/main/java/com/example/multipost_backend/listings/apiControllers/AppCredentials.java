@@ -1,4 +1,4 @@
-package com.example.multipost_backend.listings.listingRequests;
+package com.example.multipost_backend.listings.apiControllers;
 
 import com.example.multipost_backend.auth.user.Role;
 import com.example.multipost_backend.auth.user.User;
@@ -7,7 +7,7 @@ import com.example.multipost_backend.listings.allegro.AllegroTokenResponse;
 import com.example.multipost_backend.listings.services.*;
 import com.example.multipost_backend.listings.dbModels.UserAccessKeys;
 import com.example.multipost_backend.listings.dbModels.UserKeysRepository;
-import com.example.multipost_backend.listings.olx.OlxTokenResponse;
+import com.example.multipost_backend.listings.olx.authentication.OlxTokenResponse;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;

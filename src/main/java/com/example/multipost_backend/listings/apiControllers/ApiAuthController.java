@@ -1,4 +1,4 @@
-package com.example.multipost_backend.listings.listingRequests;
+package com.example.multipost_backend.listings.apiControllers;
 
 
 import com.example.multipost_backend.auth.user.User;

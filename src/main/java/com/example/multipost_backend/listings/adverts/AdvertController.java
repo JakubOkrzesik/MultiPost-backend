@@ -161,8 +161,10 @@ public class AdvertController {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Object> deleteAdvert(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @PathVariable int id) throws AdvertNotFoundException {
-        try {// advert will be deleted from database and delisted on allegro and olx
 
+        // advert will be deleted from database and delisted on allegro and olx
+
+        try {
             User user = findUserByAuthHeaderEmail(authHeader);
 
             Listing listing = listingRepository.findById(id)
@@ -208,7 +210,6 @@ public class AdvertController {
 
     private User findUserByAuthHeaderEmail(String authHeader){
         String email = generalService.getUsername(authHeader);
-        logger.info("Extracted email: {}", email);
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));

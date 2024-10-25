@@ -3,7 +3,10 @@ package com.example.multipost_backend.listings.services;
 
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
+import com.example.multipost_backend.listings.allegro.AllegroProduct;
 import com.example.multipost_backend.listings.allegro.AllegroTokenResponse;
+import com.example.multipost_backend.listings.allegro.CategoryResponse;
+import com.example.multipost_backend.listings.allegro.ProductWrapper;
 import com.example.multipost_backend.listings.dbModels.UserAccessKeys;
 import com.example.multipost_backend.listings.dbModels.AllegroListingState;
 import com.example.multipost_backend.listings.dbModels.UserKeysRepository;
@@ -138,62 +141,94 @@ public class AllegroService {
         return editAllegroOffer(updatedAdvertData, advertId, user);
     }
 
-    public JsonNode getCategorySuggestion(String suggestion) {
+    public CategoryResponse getCategorySuggestion(String suggestion) {
 
         User user = userRepository.findByEmail("admin@admin.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        /*return AllegroClient.get()
+                .uri(String.format("sale/matching-categories?name=%s", suggestion))
+                .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();*/
 
         return AllegroClient.get()
                 .uri(String.format("sale/matching-categories?name=%s", suggestion))
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .retrieve()
-                .bodyToMono(JsonNode.class)
+                .bodyToMono(CategoryResponse.class)
                 .block();
     }
 
-    public JsonNode allegroProductSearch(String suggestion, String categoryID) {
+    public ProductWrapper allegroProductSearch(String suggestion, String categoryID) {
 
         String url = String.format("/sale/products?phrase=%s&language=pl-PL&category.id=%s", suggestion, categoryID);
 
         User user = userRepository.findByEmail("admin@admin.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        return AllegroClient.get()
+        /*return AllegroClient.get()
                 .uri(url)
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .retrieve()
                 .bodyToMono(JsonNode.class)
+                .block();*/
+
+        return AllegroClient.get()
+                .uri(url)
+                .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
+                .retrieve()
+                .bodyToMono(ProductWrapper.class)
                 .block();
     }
 
-    public JsonNode allegroGTINProductSearch(long GTIN) {
+    public ProductWrapper allegroGTINProductSearch(long GTIN) {
 
         String url = String.format("/sale/products?phrase=%s&language=pl-PL&mode=GTIN", GTIN);
 
         User user = userRepository.findByEmail("admin@admin.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        return AllegroClient.get()
+        /*return AllegroClient.get()
                 .uri(url)
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .retrieve()
                 .bodyToMono(JsonNode.class)
+                .block();*/
+
+        return AllegroClient.get()
+                .uri(url)
+                .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
+                .retrieve()
+                .bodyToMono(ProductWrapper.class)
                 .block();
     }
 
-    public JsonNode getProduct(String ID) {
+    public AllegroProduct getProduct(String ID) {
         User user = userRepository.findByEmail("admin@admin.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        /*return AllegroClient.get()
+                .uri(String.format("sale/products/%s", ID))
+                .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();*/
 
         return AllegroClient.get()
                 .uri(String.format("sale/products/%s", ID))
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .retrieve()
-                .bodyToMono(JsonNode.class)
+                .bodyToMono(AllegroProduct.class)
                 .block();
     }
 

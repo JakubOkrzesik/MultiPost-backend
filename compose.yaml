@@ -5,3 +5,15 @@ services:
       - .env
     ports:
       - '3306:3306'
+  app:
+    image: "lilbapo/multipost:backend-production"
+    ports:
+      - '8080:8080'
+    depends_on:
+      - 'mysql'
+  frontend:
+      image: 'lilbapo/multipost:frontend-production'
+      ports:
+        - '4200:4200'
+      depends_on:
+      - 'app'

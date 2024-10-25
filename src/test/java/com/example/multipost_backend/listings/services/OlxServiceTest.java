@@ -3,7 +3,10 @@ package com.example.multipost_backend.listings.services;
 import com.example.multipost_backend.MultiPostBackendApplication;
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
-import com.example.multipost_backend.listings.olx.Location;
+import com.example.multipost_backend.listings.olx.*;
+import com.example.multipost_backend.listings.olx.advertClasses.Location;
+import com.example.multipost_backend.listings.olx.advertClasses.OlxAdvert;
+import com.example.multipost_backend.listings.olx.advertClasses.SimplifiedOlxAdvert;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,17 +41,17 @@ class OlxServiceTest {
     }
 
     @Test
-    void getCategorySuggestion() throws JsonProcessingException {
+    void getCategorySuggestion() {
         String suggestion = olxService.getCategorySuggestion("Audi A3");
         assertEquals(182, Integer.parseInt(suggestion));
     }
 
     @Test
-    void getCategoryAttributes() throws JsonProcessingException {
+    void getCategoryAttributes() {
         String suggestion = olxService.getCategorySuggestion("Audi A3");
         System.out.println(suggestion);
-        List<JsonNode> data1 = olxService.getCategoryAttributes(suggestion);
-        List<JsonNode> emptyList = new ArrayList<>();
+        List<CategoryAttribs> data1 = olxService.getCategoryAttributes(suggestion);
+        List<CategoryAttribs> emptyList = new ArrayList<>();
         System.out.println(data1);
         assertNotEquals(emptyList, data1);
     }
@@ -59,6 +62,7 @@ class OlxServiceTest {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         JsonNode response = olxService.updateAdvertPrice(6900, "925323675", user);
+        System.out.println(response);
         ObjectNode emptyNode = objectMapper.createObjectNode();
         assertNotEquals(emptyNode, response);
     }
@@ -77,12 +81,34 @@ class OlxServiceTest {
         assertThat(statusChangeResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
 
-    @Test
+    /*@Test
     void getUserAdverts() {
         User user = userRepository.findByEmail("test@user.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        JsonNode response = olxService.getAdverts(user);
+        OlxListWrapperClass<SimplifiedOlxAdvert> response = olxService.getAdverts(user);
         System.out.println(response);
+    }*/
+
+    @Test
+    void getSimpleAdvert() {
+        User user = userRepository.findByEmail("test@user.com")
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        String id = "927859243";
+
+        OlxObjectWrapperClass<SimplifiedOlxAdvert> response = olxService.getSimpleAdvert(id, user);
+        assert response!=null;
+    }
+
+    @Test
+    void getDetailedAdvert() {
+        User user = userRepository.findByEmail("test@user.com")
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        String id = "954655310";
+
+        OlxObjectWrapperClass<OlxAdvert> response = olxService.getModifiableOlxAdvert(id, user);
+        assert response!=null;
     }
 }

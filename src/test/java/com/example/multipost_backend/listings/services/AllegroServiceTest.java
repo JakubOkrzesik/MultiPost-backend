@@ -2,6 +2,9 @@ package com.example.multipost_backend.listings.services;
 
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
+import com.example.multipost_backend.listings.allegro.AllegroProduct;
+import com.example.multipost_backend.listings.allegro.CategoryResponse;
+import com.example.multipost_backend.listings.allegro.ProductWrapper;
 import com.example.multipost_backend.listings.dbModels.AllegroListingState;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,7 +28,7 @@ class AllegroServiceTest {
 
     @Test
     void getCategorySuggestion() {
-        JsonNode response = allegroService.getCategorySuggestion("Telefon Iphone 12");
+        CategoryResponse response = allegroService.getCategorySuggestion("Telefon Iphone 12");
         ArrayNode array = objectMapper.createArrayNode();
         System.out.println(response);
         assertNotEquals(array, response);
@@ -33,7 +36,7 @@ class AllegroServiceTest {
 
     @Test
     void allegroProductSearch() {
-        JsonNode response = allegroService.allegroProductSearch("Iphone 12 telefon", "165");
+        ProductWrapper response = allegroService.allegroProductSearch("Iphone 12 telefon", "165");
         ArrayNode array = objectMapper.createArrayNode();
         System.out.println(response);
         assertNotEquals(array, response);
@@ -41,7 +44,7 @@ class AllegroServiceTest {
 
     @Test
     void allegroProductTest() {
-        JsonNode response = allegroService.getProduct("065bb735-4257-44d4-93f6-4f7decc71150");
+        AllegroProduct response = allegroService.getProduct("065bb735-4257-44d4-93f6-4f7decc71150");
         ArrayNode array = objectMapper.createArrayNode();
         System.out.println(response);
         assertNotEquals(array, response);
@@ -51,14 +54,16 @@ class AllegroServiceTest {
     void getParamsTest() {
         JsonNode response = allegroService.getParams("165");
         ObjectNode array = objectMapper.createObjectNode();
+        System.out.println(response);
         assertNotEquals(array, response);
     }
 
     @Test
     void getProductByGTIN() {
         long gtin = 888462600712L;
-        JsonNode response = allegroService.allegroGTINProductSearch(gtin);
+        ProductWrapper response = allegroService.allegroGTINProductSearch(gtin);
         ObjectNode array = objectMapper.createObjectNode();
+        System.out.println(response);
         assertNotEquals(array, response);
     }
 
@@ -88,6 +93,17 @@ class AllegroServiceTest {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         JsonNode response = allegroService.getAdverts(user);
+        System.out.println(response);
+    }
+
+    @Test
+    void getAdvert() {
+        User user = userRepository.findByEmail("test@user.com")
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        String id = "7775899135";
+
+        JsonNode response = allegroService.getAdvert(id,user);
         System.out.println(response);
     }
 }

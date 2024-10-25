@@ -1,4 +1,4 @@
-package com.example.multipost_backend.listings.olx;
+package com.example.multipost_backend.listings.olx.authentication;
 
 import com.example.multipost_backend.listings.sharedApiModels.GrantCodeResponse;
 import lombok.Data;

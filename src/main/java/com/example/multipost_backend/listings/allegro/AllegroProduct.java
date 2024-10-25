@@ -1,4 +1,4 @@
-package com.example.multipost_backend.listings.DtoApiTest.TestClasses;
+package com.example.multipost_backend.listings.allegro;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.node.ArrayNode;

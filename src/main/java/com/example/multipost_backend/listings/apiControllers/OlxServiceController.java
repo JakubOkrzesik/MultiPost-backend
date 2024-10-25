@@ -1,17 +1,14 @@
 package com.example.multipost_backend.listings.apiControllers;
 
-import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
-import com.example.multipost_backend.listings.olx.Location;
+import com.example.multipost_backend.listings.olx.CategoryAttribs;
+import com.example.multipost_backend.listings.olx.advertClasses.Location;
 import com.example.multipost_backend.listings.services.GeneralService;
 import com.example.multipost_backend.listings.services.OlxService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,14 +22,14 @@ public class OlxServiceController {
     private final UserRepository userRepository;
 
     @PostMapping(value = "/attribs", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getCategoryAttributes(@RequestParam("categoryID") String categoryID) throws JsonProcessingException {
+    public ResponseEntity<List<CategoryAttribs>> getCategoryAttributes(@RequestParam("categoryID") String categoryID) {
 
-        List<JsonNode> catAttribs = olxService.getCategoryAttributes(categoryID);
+        List<CategoryAttribs> catAttribs = olxService.getCategoryAttributes(categoryID);
         return ResponseEntity.ok(catAttribs);
     }
 
     @GetMapping(value = "/category", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getCategorySuggestion(@RequestParam("title") String title) throws JsonProcessingException {
+    public ResponseEntity<String> getCategorySuggestion(@RequestParam("title") String title) throws JsonProcessingException {
         return ResponseEntity.ok(olxService.getCategorySuggestion(title));
     }
 
@@ -41,7 +38,7 @@ public class OlxServiceController {
         return ResponseEntity.ok(olxService.getLocation(lat, lng));
     }
 
-    @GetMapping(value = "/advert/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    /*@GetMapping(value = "/advert/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getOlxAdvert(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @PathVariable("id") String id) {
         String email = generalService.getUsername(authHeader);
 
@@ -49,6 +46,6 @@ public class OlxServiceController {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         return ResponseEntity.ok(olxService.getAdvert(id, user));
-    }
+    }*/
 
 }

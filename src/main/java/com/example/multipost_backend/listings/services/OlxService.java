@@ -7,12 +7,20 @@ import com.example.multipost_backend.listings.dbModels.UserAccessKeys;
 import com.example.multipost_backend.listings.dbModels.OlxListingState;
 import com.example.multipost_backend.listings.dbModels.UserKeysRepository;
 import com.example.multipost_backend.listings.olx.*;
+import com.example.multipost_backend.listings.olx.advertClasses.Location;
+import com.example.multipost_backend.listings.olx.advertClasses.OlxAdvert;
+import com.example.multipost_backend.listings.olx.advertClasses.Price;
+import com.example.multipost_backend.listings.olx.advertClasses.SimplifiedOlxAdvert;
+import com.example.multipost_backend.listings.olx.authentication.OlxClientRequest;
+import com.example.multipost_backend.listings.olx.authentication.OlxRefreshRequest;
+import com.example.multipost_backend.listings.olx.authentication.OlxTokenRequest;
+import com.example.multipost_backend.listings.olx.authentication.OlxTokenResponse;
 import com.example.multipost_backend.listings.sharedApiModels.GrantCodeResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.AllArgsConstructor;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -56,27 +64,56 @@ public class OlxService {
     }
 
 
-    public JsonNode getAdvert(String advertID, User user) {
-        return OlxClient.get()
+    public OlxObjectWrapperClass<SimplifiedOlxAdvert> getSimpleAdvert(String advertID, User user) {
+        /*return OlxClient.get()
                 .uri(String.format("/partner/adverts/%s", advertID))
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
                 .retrieve()
                 .bodyToMono(JsonNode.class)
+                .block();*/
+
+        return OlxClient.get()
+                .uri(String.format("/partner/adverts/%s", advertID))
+                .accept(MediaType.APPLICATION_JSON)
+                .headers(h -> h.addAll(getUserHeaders(user)))
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<OlxObjectWrapperClass<SimplifiedOlxAdvert>>() {
+                })
                 .block();
     }
 
-    public JsonNode getAdverts(User user) {
+    public OlxObjectWrapperClass<OlxAdvert> getModifiableOlxAdvert(String advertID, User user) {
         return OlxClient.get()
+                .uri(String.format("/partner/adverts/%s", advertID))
+                .accept(MediaType.APPLICATION_JSON)
+                .headers(h -> h.addAll(getUserHeaders(user)))
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<OlxObjectWrapperClass<OlxAdvert>>() {
+                })
+                .block();
+    }
+
+    /*public OlxListWrapperClass<SimplifiedOlxAdvert> getAdverts(User user) {
+        *//*return OlxClient.get()
                 .uri("/partner/adverts")
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
                 .retrieve()
                 .bodyToMono(JsonNode.class)
-                .block();
-    }
+                .block();*//*
 
-    public JsonNode updateAdvert(ObjectNode updatedAdvert, String advertID, User user) {
+        return OlxClient.get()
+                .uri("/partner/adverts")
+                .accept(MediaType.APPLICATION_JSON)
+                .headers(h -> h.addAll(getUserHeaders(user)))
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<OlxListWrapperClass<SimplifiedOlxAdvert>>() {
+                })
+                .block();
+    }*/
+
+    public JsonNode updateAdvert(OlxAdvert updatedAdvert, String advertID, User user) {
         return OlxClient.put()
                 .uri(String.format("/partner/adverts/%s", advertID))
                 .accept(MediaType.APPLICATION_JSON)
@@ -88,35 +125,17 @@ public class OlxService {
                 .block();
     }
 
-    // needs reevaluation
-    // map to advert object and map the unneeded parts to a generic which then could be deleted??
     public JsonNode updateAdvertPrice(int newPrice, String advertID, User user) {
-        ObjectNode advert = (ObjectNode) getAdvert(advertID, user).get("data");
-        advert.remove("id");
-        advert.remove("status");
-        advert.remove("url");
-        advert.remove("created_at");
-        advert.remove("activated_at");
-        advert.remove("valid_to");
-        advert.remove("salary");
+        OlxAdvert advert = getModifiableOlxAdvert(advertID, user).getData();
+        assert advert!=null;
 
-        if (!advert.get("attributes").isNull()) {
-            JsonNode attributesNode = advert.get("attributes");
-            // Iterate over each attribute object
-            for (JsonNode attributeNode : attributesNode) {
-                // Remove the "values" field from each attribute object otherwise the advert won't pass
-                ((ObjectNode) attributeNode).remove("values");
-            }
-        }
-
-        advert.set("price", objectMapper.valueToTree(Price.builder()
+        advert.setPrice(Price.builder()
                 .value(newPrice)
                 .negotiable(false)
-                .build()));
+                .build());
 
         return updateAdvert(advert, advertID, user);
     }
-
 
     public ResponseEntity<Void> changeAdvertStatus(String advertID, String command, User user) {
 
@@ -147,6 +166,7 @@ public class OlxService {
 
     // OLX requires location to be acquired from their api - retrieving user specified coordinates from Google Maps api
     // and parsing them into the request body
+    // needs reevaluation
     public Location getLocation(String lat, String lon) throws JsonProcessingException {
 
         User user = userRepository.findByEmail("admin@admin.com")
@@ -176,13 +196,13 @@ public class OlxService {
     }
 
     // Title is provided to extract a category ID
-    public String getCategorySuggestion(String title) throws JsonProcessingException {
+    public String getCategorySuggestion(String title) {
 
         // Not the most efficient way of going about it needs tweaking
         User user = userRepository.findByEmail("admin@admin.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        String data = OlxClient.get()
+        /*String data = OlxClient.get()
                 .uri(String.format("/partner/categories/suggestion?q=%s", title))
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
@@ -190,19 +210,29 @@ public class OlxService {
                 .bodyToMono(String.class)
                 .block();
 
-        JsonNode jsonData = objectMapper.readTree(data);
+        JsonNode jsonData = objectMapper.readTree(data);*/
 
-        return jsonData.get("data").get(0).get("id").asText();
+        OlxListWrapperClass<Category> response = OlxClient.get()
+                .uri(String.format("/partner/categories/suggestion?q=%s", title))
+                .accept(MediaType.APPLICATION_JSON)
+                .headers(h -> h.addAll(getUserHeaders(user)))
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<OlxListWrapperClass<Category>>() {
+                })
+                .block();
+
+        assert response != null;
+        return response.getData().get(0).getId();
     }
 
-    public List<JsonNode> getCategoryAttributes(String id) {
+    public List<CategoryAttribs> getCategoryAttributes(String id) {
 
         User user = userRepository.findByEmail("admin@admin.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         String uri = String.format("/partner/categories/%s/attributes", id);
 
-        JsonNode rootNode = OlxClient.get()
+        /*JsonNode rootNode = OlxClient.get()
                 .uri(uri)
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
@@ -218,6 +248,24 @@ public class OlxService {
             if (node.get("validation").get("required").asBoolean()) {
                 attribList.add(node);
             }
+        }*/
+
+        OlxListWrapperClass<CategoryAttribs> result = OlxClient.get()
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .headers(h -> h.addAll(getUserHeaders(user)))
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<OlxListWrapperClass<CategoryAttribs>>() {
+                })
+                .block();
+
+        List<CategoryAttribs> attribList = new ArrayList<>();
+
+        assert result != null;
+        for (CategoryAttribs attribs: result.getData()) {
+            if (attribs.getValidation().isRequired()) {
+                attribList.add(attribs);
+            }
         }
 
         return attribList;
@@ -225,7 +273,7 @@ public class OlxService {
 
 
     // Method provides the two always required headers for OLX Api requests
-    private HttpHeaders getUserHeaders(User user) {
+    public HttpHeaders getUserHeaders(User user) {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", getUserToken(user)));
         headers.set("Version", "2.0");
