@@ -21,8 +21,8 @@ public class AppCredentials {
     private final OlxService olxService;
     private final GeneralService generalService;
     private final EnvService envService;
-    private final UserRepository userRepository;
-    private final UserKeysRepository userKeysRepository;
+    private final UserService userService;
+    private final UserKeysService userKeysService;
 
 
     // Getting the application's OLX and Allegro credentials on startup. These can be used to access parameters needed to complete
@@ -35,7 +35,7 @@ public class AppCredentials {
             throw new IllegalStateException("Admin password not found in environmental variables");
         }
 
-        User user = userRepository.findByEmail("admin@admin.com").orElse(
+        User user = userService.findByEmail("admin@admin.com").orElse(
                 User.builder()
                         .email("admin@admin.com")
                         .password(password)
@@ -53,8 +53,8 @@ public class AppCredentials {
                 setTokenData(newKeys, olxResponse, allegroResponse);
 
                 user.setKeys(newKeys);
-                userRepository.save(user);
-                userKeysRepository.save(newKeys);
+                userService.saveUser(user);
+                userKeysService.saveKeys(newKeys);
             }
         } else {
             newKeys = UserAccessKeys.builder()
@@ -66,8 +66,8 @@ public class AppCredentials {
             setTokenData(newKeys, olxResponse, allegroResponse);
 
             user.setKeys(newKeys);
-            userRepository.save(user);
-            userKeysRepository.save(newKeys);
+            userService.saveUser(user);
+            userKeysService.saveKeys(newKeys);
         }
     }
 

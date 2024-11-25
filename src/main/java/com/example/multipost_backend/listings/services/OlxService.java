@@ -41,11 +41,11 @@ public class OlxService {
     // Consists mostly of requests made to the OLX API and helper functions
 
     private final WebClient OlxClient;
-    private final UserRepository userRepository;
-    private final UserKeysRepository userKeysRepository;
     private final EnvService envService;
     private final GeneralService generalService;
     private final ObjectMapper objectMapper;
+    private final UserService userService;
+    private final UserKeysService userKeysService;
 
     // constant usage of JsonNode needs evaluation
     public JsonNode createAdvert(JsonNode newAdvert, User user) {
@@ -169,7 +169,7 @@ public class OlxService {
     // needs reevaluation
     public Location getLocation(String lat, String lon) throws JsonProcessingException {
 
-        User user = userRepository.findByEmail("admin@admin.com")
+        User user = userService.findByEmail("admin@admin.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         String data = OlxClient.get()
@@ -199,7 +199,7 @@ public class OlxService {
     public String getCategorySuggestion(String title) {
 
         // Not the most efficient way of going about it needs tweaking
-        User user = userRepository.findByEmail("admin@admin.com")
+        User user = userService.findByEmail("admin@admin.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         /*String data = OlxClient.get()
@@ -227,7 +227,7 @@ public class OlxService {
 
     public List<CategoryAttribs> getCategoryAttributes(String id) {
 
-        User user = userRepository.findByEmail("admin@admin.com")
+        User user = userService.findByEmail("admin@admin.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         String uri = String.format("/partner/categories/%s/attributes", id);
@@ -323,9 +323,9 @@ public class OlxService {
                     keys.setOlxTokenExpiration(generalService.calculateExpiration(response.getExpires_in()));
                 }
 
-                userKeysRepository.save(keys);
+                userKeysService.saveKeys(keys);
                 user.setKeys(keys);
-                userRepository.save(user);
+                userService.saveUser(user);
                 return keys.getOlxAccessToken();
             }
             return keys.getOlxAccessToken();

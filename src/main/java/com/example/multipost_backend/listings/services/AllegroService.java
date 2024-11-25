@@ -30,13 +30,13 @@ public class AllegroService {
     private final WebClient AllegroClient;
     private final GeneralService generalService;
     private final EnvService envService;
-    private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
-    private final UserKeysRepository userKeysRepository;
+    private final UserService userService;
+    private final UserKeysService userKeysService;
 
     public AllegroTokenResponse getAllegroToken(String code) {
         return AllegroClient.mutate().baseUrl("https://allegro.pl.allegrosandbox.pl").build().post() // The allegro api does not work with the .bodyValue method inside webclient or im doing sth wrong (probably the case)
-                .uri(String.format("/auth/oauth/token?grant_type=authorization_code&code=%s&redirect_uri=%s/allegro-auth-callback", code, envService.getREDIRECT_URI()))
+                .uri(String.format("/auth/oauth/token?grant_type=authorization_code&code=%s&redirect_uri=%s:4200/allegro-auth-callback", code, envService.getFRONTEND_URI()))
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .contentType(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .headers(h -> h.addAll(getAllegroHeaders()))
@@ -58,7 +58,7 @@ public class AllegroService {
 
     private AllegroTokenResponse updateUserToken(String allegroRefreshToken) {
         return AllegroClient.mutate().baseUrl("https://allegro.pl.allegrosandbox.pl").build().post()
-                .uri(String.format("/auth/oauth/token?grant_type=refresh_token&refresh_token=%s&redirect_uri=%s/api/v1/auth/allegro", allegroRefreshToken, envService.getREDIRECT_URI()))
+                .uri(String.format("/auth/oauth/token?grant_type=refresh_token&refresh_token=%s&redirect_uri=%s:4200/api/v1/auth/allegro", allegroRefreshToken, envService.getFRONTEND_URI()))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getAllegroHeaders()))
@@ -143,7 +143,7 @@ public class AllegroService {
 
     public CategoryResponse getCategorySuggestion(String suggestion) {
 
-        User user = userRepository.findByEmail("admin@admin.com")
+        User user = userService.findByEmail("admin@admin.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         /*return AllegroClient.get()
@@ -167,7 +167,7 @@ public class AllegroService {
 
         String url = String.format("/sale/products?phrase=%s&language=pl-PL&category.id=%s", suggestion, categoryID);
 
-        User user = userRepository.findByEmail("admin@admin.com")
+        User user = userService.findByEmail("admin@admin.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         /*return AllegroClient.get()
@@ -191,7 +191,7 @@ public class AllegroService {
 
         String url = String.format("/sale/products?phrase=%s&language=pl-PL&mode=GTIN", GTIN);
 
-        User user = userRepository.findByEmail("admin@admin.com")
+        User user = userService.findByEmail("admin@admin.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         /*return AllegroClient.get()
@@ -212,7 +212,7 @@ public class AllegroService {
     }
 
     public AllegroProduct getProduct(String ID) {
-        User user = userRepository.findByEmail("admin@admin.com")
+        User user = userService.findByEmail("admin@admin.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         /*return AllegroClient.get()
@@ -233,7 +233,7 @@ public class AllegroService {
     }
 
     public JsonNode getParams (String ID) {
-        User user = userRepository.findByEmail("admin@admin.com")
+        User user = userService.findByEmail("admin@admin.com")
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         return AllegroClient.get()
@@ -266,9 +266,9 @@ public class AllegroService {
                     keys.setAllegroTokenExpiration(generalService.calculateExpiration(response.getExpires_in()));
                 }
 
-                userKeysRepository.save(keys);
+                userKeysService.saveKeys(keys);
                 user.setKeys(keys);
-                userRepository.save(user);
+                userService.saveUser(user);
                 return keys.getAllegroAccessToken();
             }
 

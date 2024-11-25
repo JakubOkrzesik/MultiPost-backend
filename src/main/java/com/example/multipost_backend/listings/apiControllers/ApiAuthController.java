@@ -4,9 +4,7 @@ package com.example.multipost_backend.listings.apiControllers;
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.allegro.AllegroTokenResponse;
-import com.example.multipost_backend.listings.services.AllegroService;
-import com.example.multipost_backend.listings.services.GeneralService;
-import com.example.multipost_backend.listings.services.OlxService;
+import com.example.multipost_backend.listings.services.*;
 import com.example.multipost_backend.listings.dbModels.UserAccessKeys;
 import com.example.multipost_backend.listings.dbModels.UserKeysRepository;
 import com.example.multipost_backend.listings.sharedApiModels.GrantCodeResponse;
@@ -27,25 +25,25 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ApiAuthController {
 
-    private final UserRepository userRepository;
-    private final UserKeysRepository userKeysRepository;
     private final OlxService olxService;
     /*private final EbayService ebayService;*/
     private final AllegroService allegroService;
     private final GeneralService generalService;
+    private final UserService userService;
+    private final UserKeysService userKeysService;
     private static final Logger log = LoggerFactory.getLogger(ApiAuthController.class);
 
     @GetMapping("/olx")
     public ResponseEntity<Map<String, String>> olxAuth(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @RequestParam("code") String code){
         String email = generalService.getUsername(authHeader);
 
-        User user = userRepository.findByEmail(email)
+        User user = userService.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         GrantCodeResponse response = olxService.getOlxToken(code);
 
         UserAccessKeys keys;
 
-        Optional<UserAccessKeys> userKeysOptional = userKeysRepository.findByUser(user);
+        Optional<UserAccessKeys> userKeysOptional = userKeysService.findByUser(user);
 
         if (userKeysOptional.isPresent()) {
             keys = userKeysOptional.get();
@@ -68,12 +66,12 @@ public class ApiAuthController {
     public ResponseEntity<Map<String, String>> allegroAuth(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @RequestParam("code") String code){
         String email = generalService.getUsername(authHeader);
 
-        User user = userRepository.findByEmail(email)
+        User user = userService.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         AllegroTokenResponse response = allegroService.getAllegroToken(code);
         UserAccessKeys keys;
 
-        Optional<UserAccessKeys> userKeysOptional = userKeysRepository.findByUser(user);
+        Optional<UserAccessKeys> userKeysOptional = userKeysService.findByUser(user);
 
         if (userKeysOptional.isPresent()) {
             keys = userKeysOptional.get();
@@ -96,8 +94,8 @@ public class ApiAuthController {
     @NotNull
     private ResponseEntity<Map<String, String>> getMapResponseEntity(User user, UserAccessKeys keys) {
         user.setKeys(keys);
-        userKeysRepository.save(keys);
-        userRepository.save(user);
+        userKeysService.saveKeys(keys);
+        userService.saveUser(user);
 
         Map<String, String> responseBody = new HashMap<>();
         responseBody.put("message", "Authentication successful");

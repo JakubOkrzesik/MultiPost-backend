@@ -4,6 +4,7 @@ import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.services.AllegroService;
 import com.example.multipost_backend.listings.services.GeneralService;
+import com.example.multipost_backend.listings.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -15,10 +16,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("api/v1/allegro")
 @RequiredArgsConstructor
 public class AllegroServiceController {
+
     private final AllegroService allegroService;
     private final GeneralService generalService;
-    private final UserRepository userRepository;
-
+    private final UserService userService;
 
     @GetMapping(value = "/category/suggestion", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getCategorySuggestion(@RequestParam("phrase") String phrase) {
@@ -52,7 +53,7 @@ public class AllegroServiceController {
     public ResponseEntity<Object> getOlxAdvert(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @PathVariable("id") String id) {
         String email = generalService.getUsername(authHeader);
 
-        User user = userRepository.findByEmail(email)
+        User user = userService.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         return ResponseEntity.ok(allegroService.getAdvert(id, user));

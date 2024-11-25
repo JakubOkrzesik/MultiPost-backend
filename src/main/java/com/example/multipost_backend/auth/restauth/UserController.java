@@ -6,6 +6,8 @@ import com.example.multipost_backend.listings.dbModels.UserAccessKeys;
 import com.example.multipost_backend.listings.dbModels.UserKeysRepository;
 import com.example.multipost_backend.listings.services.ResponseHandlerService;
 import com.example.multipost_backend.listings.services.GeneralService;
+import com.example.multipost_backend.listings.services.UserKeysService;
+import com.example.multipost_backend.listings.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -23,10 +25,11 @@ import java.util.Map;
 @RequestMapping("api/v1/user")
 @RequiredArgsConstructor
 public class UserController {
-    private final UserRepository userRepository;
+
     private final GeneralService generalService;
-    private final UserKeysRepository userKeysRepository;
     private final ResponseHandlerService responseHandler;
+    private final UserService userService;
+    private final UserKeysService userKeysService;
 
     // super dumb request could be resolved by adding claims to the JWT token NEEDS FIXING
     @GetMapping("/get")
@@ -34,12 +37,12 @@ public class UserController {
         try {
             String email = generalService.getUsername(authHeader);
 
-            User user = userRepository.findByEmail(email)
+            User user = userService.findByEmail(email)
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-            UserAccessKeys keys = userKeysRepository.findByUser(user).orElseGet(() -> {
+            UserAccessKeys keys = userKeysService.findByUser(user).orElseGet(() -> {
                 UserAccessKeys newKeys = UserAccessKeys.builder().build();
-                userKeysRepository.save(newKeys);
+                userKeysService.saveKeys(newKeys);
                 return newKeys;
             });
 

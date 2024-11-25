@@ -18,8 +18,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OlxServiceController {
     private final OlxService olxService;
-    private final GeneralService generalService;
-    private final UserRepository userRepository;
 
     @PostMapping(value = "/attribs", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<CategoryAttribs>> getCategoryAttributes(@RequestParam("categoryID") String categoryID) {
@@ -38,14 +36,5 @@ public class OlxServiceController {
         return ResponseEntity.ok(olxService.getLocation(lat, lng));
     }
 
-    /*@GetMapping(value = "/advert/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getOlxAdvert(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @PathVariable("id") String id) {
-        String email = generalService.getUsername(authHeader);
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        return ResponseEntity.ok(olxService.getAdvert(id, user));
-    }*/
 
 }
