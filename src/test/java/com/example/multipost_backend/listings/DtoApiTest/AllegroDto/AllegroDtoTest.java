@@ -2,9 +2,9 @@ package com.example.multipost_backend.listings.DtoApiTest.AllegroDto;
 
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
-import com.example.multipost_backend.listings.allegro.AllegroProduct;
-import com.example.multipost_backend.listings.allegro.CategoryResponse;
-import com.example.multipost_backend.listings.allegro.ProductWrapper;
+import com.example.multipost_backend.listings.allegroModels.AllegroProduct;
+import com.example.multipost_backend.listings.allegroModels.CategoryResponse;
+import com.example.multipost_backend.listings.allegroModels.ProductWrapper;
 import com.example.multipost_backend.listings.services.AllegroService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

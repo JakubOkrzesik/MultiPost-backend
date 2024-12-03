@@ -2,19 +2,17 @@ package com.example.multipost_backend.listings.services;
 
 
 import com.example.multipost_backend.auth.user.User;
-import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.dbModels.UserAccessKeys;
 import com.example.multipost_backend.listings.dbModels.OlxListingState;
-import com.example.multipost_backend.listings.dbModels.UserKeysRepository;
-import com.example.multipost_backend.listings.olx.*;
-import com.example.multipost_backend.listings.olx.advertClasses.Location;
-import com.example.multipost_backend.listings.olx.advertClasses.OlxAdvert;
-import com.example.multipost_backend.listings.olx.advertClasses.Price;
-import com.example.multipost_backend.listings.olx.advertClasses.SimplifiedOlxAdvert;
-import com.example.multipost_backend.listings.olx.authentication.OlxClientRequest;
-import com.example.multipost_backend.listings.olx.authentication.OlxRefreshRequest;
-import com.example.multipost_backend.listings.olx.authentication.OlxTokenRequest;
-import com.example.multipost_backend.listings.olx.authentication.OlxTokenResponse;
+import com.example.multipost_backend.listings.olxModels.*;
+import com.example.multipost_backend.listings.olxModels.advertClasses.Location;
+import com.example.multipost_backend.listings.olxModels.advertClasses.OlxAdvert;
+import com.example.multipost_backend.listings.olxModels.advertClasses.Price;
+import com.example.multipost_backend.listings.olxModels.advertClasses.SimplifiedOlxAdvert;
+import com.example.multipost_backend.listings.olxModels.authentication.OlxClientRequest;
+import com.example.multipost_backend.listings.olxModels.authentication.OlxRefreshRequest;
+import com.example.multipost_backend.listings.olxModels.authentication.OlxTokenRequest;
+import com.example.multipost_backend.listings.olxModels.authentication.OlxTokenResponse;
 import com.example.multipost_backend.listings.sharedApiModels.GrantCodeResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;

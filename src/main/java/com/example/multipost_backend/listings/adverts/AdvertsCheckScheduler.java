@@ -4,10 +4,12 @@ import com.example.multipost_backend.auth.user.Role;
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.dbModels.*;
-import com.example.multipost_backend.listings.olx.OlxObjectWrapperClass;
-import com.example.multipost_backend.listings.olx.advertClasses.SimplifiedOlxAdvert;
+import com.example.multipost_backend.listings.olxModels.OlxObjectWrapperClass;
+import com.example.multipost_backend.listings.olxModels.advertClasses.SimplifiedOlxAdvert;
 import com.example.multipost_backend.listings.services.AllegroService;
+import com.example.multipost_backend.listings.services.ListingService;
 import com.example.multipost_backend.listings.services.OlxService;
+import com.example.multipost_backend.listings.services.UserService;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,16 +30,15 @@ import java.util.List;
 public class AdvertsCheckScheduler {
     private final OlxService olxService;
     private final AllegroService allegroService;
-    private final UserRepository userRepository;
-    private final ListingRepository listingRepository;
+    private final ListingService listingService;
+    private final UserService userService;
     private static final Logger log = LoggerFactory.getLogger(ScheduledTask.class);
 
     @Scheduled(fixedDelay = 30000)
     @Transactional
     @Async
     public void fullAdvertCheckMechanismTest() {
-        List<User> userList = userRepository.findAllByRole(Role.USER)
-                .orElse(new ArrayList<>());
+        List<User> userList = userService.findAllByRole(Role.USER);
 
         if (userList.isEmpty()) {
             log.info("No users found.");
@@ -45,8 +46,7 @@ public class AdvertsCheckScheduler {
         }
 
         userList.parallelStream().forEach(user -> {
-            List<Listing> listings = listingRepository.findAllByUserId(user.getId()).
-                    orElse(new ArrayList<>());
+            List<Listing> listings = listingService.findAllByUserId(user.getId());
 
             int olxCounter = 0;
             int allegroCounter = 0;
@@ -78,7 +78,7 @@ public class AdvertsCheckScheduler {
 
             if (isUpdated) {
                 try {
-                    listingRepository.saveAll(listings);
+                    listingService.saveAll(listings);
                 } catch (Exception e) {
                     log.error("Error saving updated listings for user id: " + user.getId(), e);
                 }

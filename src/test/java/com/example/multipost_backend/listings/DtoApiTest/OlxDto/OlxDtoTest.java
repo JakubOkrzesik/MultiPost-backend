@@ -2,10 +2,10 @@ package com.example.multipost_backend.listings.DtoApiTest.OlxDto;
 
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
-import com.example.multipost_backend.listings.olx.*;
-import com.example.multipost_backend.listings.olx.Category;
-import com.example.multipost_backend.listings.olx.CategoryAttribs;
-import com.example.multipost_backend.listings.olx.advertClasses.SimplifiedOlxAdvert;
+import com.example.multipost_backend.listings.olxModels.*;
+import com.example.multipost_backend.listings.olxModels.Category;
+import com.example.multipost_backend.listings.olxModels.CategoryAttribs;
+import com.example.multipost_backend.listings.olxModels.advertClasses.SimplifiedOlxAdvert;
 import com.example.multipost_backend.listings.services.OlxService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

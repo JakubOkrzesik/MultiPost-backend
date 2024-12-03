@@ -2,14 +2,12 @@ package com.example.multipost_backend.listings.services;
 
 
 import com.example.multipost_backend.auth.user.User;
-import com.example.multipost_backend.auth.user.UserRepository;
-import com.example.multipost_backend.listings.allegro.AllegroProduct;
-import com.example.multipost_backend.listings.allegro.AllegroTokenResponse;
-import com.example.multipost_backend.listings.allegro.CategoryResponse;
-import com.example.multipost_backend.listings.allegro.ProductWrapper;
+import com.example.multipost_backend.listings.allegroModels.AllegroProduct;
+import com.example.multipost_backend.listings.allegroModels.AllegroTokenResponse;
+import com.example.multipost_backend.listings.allegroModels.CategoryResponse;
+import com.example.multipost_backend.listings.allegroModels.ProductWrapper;
 import com.example.multipost_backend.listings.dbModels.UserAccessKeys;
 import com.example.multipost_backend.listings.dbModels.AllegroListingState;
-import com.example.multipost_backend.listings.dbModels.UserKeysRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -88,6 +86,21 @@ public class AllegroService {
                 .bodyToMono(JsonNode.class)
                 .block();
     }*/
+
+    public JsonNode getAdvert(String authHeader, String advertId) {
+
+        String email = generalService.getUsername(authHeader);
+        User user = userService.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return AllegroClient.get()
+                .uri(String.format("sale/product-offers/%s", advertId))
+                .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+    }
 
     public JsonNode getAdvert(String advertId, User user) {
         return AllegroClient.get()

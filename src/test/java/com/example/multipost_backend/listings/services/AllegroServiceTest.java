@@ -2,9 +2,9 @@ package com.example.multipost_backend.listings.services;
 
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
-import com.example.multipost_backend.listings.allegro.AllegroProduct;
-import com.example.multipost_backend.listings.allegro.CategoryResponse;
-import com.example.multipost_backend.listings.allegro.ProductWrapper;
+import com.example.multipost_backend.listings.allegroModels.AllegroProduct;
+import com.example.multipost_backend.listings.allegroModels.CategoryResponse;
+import com.example.multipost_backend.listings.allegroModels.ProductWrapper;
 import com.example.multipost_backend.listings.dbModels.AllegroListingState;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

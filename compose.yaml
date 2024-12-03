@@ -13,11 +13,3 @@ services:
       - .env
     depends_on:
       - 'mysql'
-  frontend:
-      image: 'lilbapo/multipost:frontend-production'
-      ports:
-        - '4200:4200'
-      env_file:
-        - .env
-      depends_on:
-      - 'app'

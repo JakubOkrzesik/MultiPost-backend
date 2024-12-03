@@ -1,50 +1,39 @@
-package com.example.multipost_backend.listings.listingRequests;
+package com.example.multipost_backend.listings.controllers;
 
 import com.example.multipost_backend.auth.user.Role;
 import com.example.multipost_backend.auth.user.User;
-import com.example.multipost_backend.auth.user.UserRepository;
 import com.example.multipost_backend.listings.allegroModels.AllegroTokenResponse;
+import com.example.multipost_backend.listings.services.*;
 import com.example.multipost_backend.listings.dbModels.UserAccessKeys;
-import com.example.multipost_backend.listings.dbModels.UserKeysRepository;
 import com.example.multipost_backend.listings.olxModels.authentication.OlxTokenResponse;
-import com.example.multipost_backend.listings.services.AllegroService;
-import com.example.multipost_backend.listings.services.EnvService;
-import com.example.multipost_backend.listings.services.GeneralService;
-import com.example.multipost_backend.listings.services.OlxService;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import jakarta.annotation.PostConstruct;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 
-@SpringBootTest
-class AppCredentialsTest {
+@Component
+@AllArgsConstructor
+public class AppCredentials {
 
-    @Autowired
-    private AllegroService allegroService;
-    @Autowired
-    private OlxService olxService;
-    @Autowired
-    private GeneralService generalService;
-    @Autowired
-    private EnvService envService;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private UserKeysRepository userKeysRepository;
+    /*private final EbayService ebayService;*/
+    private final AllegroService allegroService;
+    private final OlxService olxService;
+    private final GeneralService generalService;
+    private final EnvService envService;
+    private final UserService userService;
+    private final UserKeysService userKeysService;
 
-    @Test
-    public void getClientCredentialswithNoAdminUser() {
 
-        User user = userRepository.findByEmail("admin@admin.com").orElseThrow(() -> new UsernameNotFoundException("Username not found"));
-
-        userRepository.delete(user);
+    // Getting the application's OLX and Allegro credentials on startup. These can be used to access parameters needed to complete
+    // the details of a listing like categories, locations etc.
+    @PostConstruct
+    public void getClientCredentials() {
 
         String password = envService.getADMIN_PASSWORD();
         if (password == null) {
             throw new IllegalStateException("Admin password not found in environmental variables");
         }
 
-        User user1 = userRepository.findByEmail("admin@admin.com").orElse(
+        User user = userService.findByEmail("admin@admin.com").orElse(
                 User.builder()
                         .email("admin@admin.com")
                         .password(password)
@@ -53,27 +42,31 @@ class AppCredentialsTest {
         );
 
 
-        UserAccessKeys newKeys = user1.getKeys();
+        UserAccessKeys newKeys = user.getKeys();
 
         if (!(newKeys==null)) {
             if (generalService.isTokenExpired(newKeys.getOlxTokenExpiration()) || generalService.isTokenExpired(newKeys.getAllegroTokenExpiration())) {
                 OlxTokenResponse olxResponse = olxService.getApplicationToken();
                 AllegroTokenResponse allegroResponse = allegroService.getClientToken();
                 setTokenData(newKeys, olxResponse, allegroResponse);
+
+                user.setKeys(newKeys);
+                userService.saveUser(user);
+                userKeysService.saveKeys(newKeys);
             }
         } else {
             newKeys = UserAccessKeys.builder()
-                    .user(user1)
+                    .user(user)
                     .build();
 
             OlxTokenResponse olxResponse = olxService.getApplicationToken();
             AllegroTokenResponse allegroResponse = allegroService.getClientToken();
             setTokenData(newKeys, olxResponse, allegroResponse);
-        }
 
-        user1.setKeys(newKeys);
-        userRepository.save(user1);
-        userKeysRepository.save(newKeys);
+            user.setKeys(newKeys);
+            userService.saveUser(user);
+            userKeysService.saveKeys(newKeys);
+        }
     }
 
     // Sets the new data to keys
