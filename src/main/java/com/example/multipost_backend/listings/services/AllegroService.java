@@ -17,7 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestClient;
 
 @Service
 @AllArgsConstructor
@@ -25,7 +25,7 @@ public class AllegroService {
 
     // Consists mostly of requests made to the Allegro API and helper functions
 
-    private final WebClient AllegroClient;
+    private final RestClient AllegroClient;
     private final GeneralService generalService;
     private final EnvService envService;
     private final ObjectMapper objectMapper;
@@ -33,14 +33,14 @@ public class AllegroService {
     private final UserKeysService userKeysService;
 
     public AllegroTokenResponse getAllegroToken(String code) {
-        return AllegroClient.mutate().baseUrl("https://allegro.pl.allegrosandbox.pl").build().post() // The allegro api does not work with the .bodyValue method inside webclient or im doing sth wrong (probably the case)
+        return AllegroClient.mutate().baseUrl("https://allegro.pl.allegrosandbox.pl").build().post() // The allegro api does not work with the .body method inside webclient or im doing sth wrong (probably the case)
                 .uri(String.format("/auth/oauth/token?grant_type=authorization_code&code=%s&redirect_uri=%s:4200/allegro-auth-callback", code, envService.getFRONTEND_URI()))
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .contentType(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .headers(h -> h.addAll(getAllegroHeaders()))
                 .retrieve()
-                .bodyToMono(AllegroTokenResponse.class)
-                .block();
+                .body(AllegroTokenResponse.class)
+                ;
     }
 
     public AllegroTokenResponse getClientToken() {
@@ -50,8 +50,7 @@ public class AllegroService {
                 .contentType(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .headers(h -> h.addAll(getAllegroHeaders()))
                 .retrieve()
-                .bodyToMono(AllegroTokenResponse.class)
-                .block();
+                .body(AllegroTokenResponse.class);
     }
 
     private AllegroTokenResponse updateUserToken(String allegroRefreshToken) {
@@ -61,8 +60,7 @@ public class AllegroService {
                 .contentType(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getAllegroHeaders()))
                 .retrieve()
-                .bodyToMono(AllegroTokenResponse.class)
-                .block();
+                .body(AllegroTokenResponse.class);
     }
 
     public ResponseEntity<JsonNode> createAdvert(JsonNode data, User user) {
@@ -71,10 +69,9 @@ public class AllegroService {
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .contentType(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
-                .bodyValue(data)
+                .body(data)
                 .retrieve()
-                .toEntity(JsonNode.class)
-                .block();
+                .toEntity(JsonNode.class);
     }
 
     /* method checks for allegro advert status
@@ -83,8 +80,8 @@ public class AllegroService {
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                .body(JsonNode.class)
+                ;
     }*/
 
     public JsonNode getAdvert(String authHeader, String advertId) {
@@ -98,8 +95,7 @@ public class AllegroService {
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                .body(JsonNode.class);
     }
 
     public JsonNode getAdvert(String advertId, User user) {
@@ -108,8 +104,7 @@ public class AllegroService {
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                .body(JsonNode.class);
     }
 
     public JsonNode getAdverts(User user) {
@@ -118,8 +113,7 @@ public class AllegroService {
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                .body(JsonNode.class);
     }
 
     public JsonNode editAllegroOffer(JsonNode data, String advertId, User user) {
@@ -128,10 +122,9 @@ public class AllegroService {
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .contentType(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
-                .bodyValue(data)
+                .body(data)
                 .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                .body(JsonNode.class);
     }
 
     public JsonNode updateAdvertPrice(int newPrice, String allegroId, User user) {
@@ -164,16 +157,15 @@ public class AllegroService {
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();*/
+                .body(JsonNode.class)
+                ;*/
 
         return AllegroClient.get()
                 .uri(String.format("sale/matching-categories?name=%s", suggestion))
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .retrieve()
-                .bodyToMono(CategoryResponse.class)
-                .block();
+                .body(CategoryResponse.class);
     }
 
     public ProductWrapper allegroProductSearch(String suggestion, String categoryID) {
@@ -188,16 +180,15 @@ public class AllegroService {
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();*/
+                .body(JsonNode.class)
+                ;*/
 
         return AllegroClient.get()
                 .uri(url)
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .retrieve()
-                .bodyToMono(ProductWrapper.class)
-                .block();
+                .body(ProductWrapper.class);
     }
 
     public ProductWrapper allegroGTINProductSearch(long GTIN) {
@@ -212,16 +203,15 @@ public class AllegroService {
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();*/
+                .body(JsonNode.class)
+                ;*/
 
         return AllegroClient.get()
                 .uri(url)
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .retrieve()
-                .bodyToMono(ProductWrapper.class)
-                .block();
+                .body(ProductWrapper.class);
     }
 
     public AllegroProduct getProduct(String ID) {
@@ -233,16 +223,15 @@ public class AllegroService {
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();*/
+                .body(JsonNode.class)
+                ;*/
 
         return AllegroClient.get()
                 .uri(String.format("sale/products/%s", ID))
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .retrieve()
-                .bodyToMono(AllegroProduct.class)
-                .block();
+                .body(AllegroProduct.class);
     }
 
     public JsonNode getParams (String ID) {
@@ -254,8 +243,7 @@ public class AllegroService {
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + getUserToken(user))
                 .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                .body(JsonNode.class);
     }
 
     public String getUserToken(User user) {

@@ -23,14 +23,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestClient;
 import org.springframework.http.HttpHeaders;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
-import static org.springframework.web.reactive.function.BodyInserters.fromFormData;
+import java.util.Map;
 
 @Service
 @AllArgsConstructor
@@ -38,7 +38,7 @@ public class OlxService {
 
     // Consists mostly of requests made to the OLX API and helper functions
 
-    private final WebClient OlxClient;
+    private final RestClient OlxClient;
     private final EnvService envService;
     private final GeneralService generalService;
     private final ObjectMapper objectMapper;
@@ -55,10 +55,9 @@ public class OlxService {
                     h.add("Content-Type", "application/json header");
                     h.addAll(getUserHeaders(user));
                 })
-                .bodyValue(newAdvert)
+                .body(newAdvert)
                 .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                .body(JsonNode.class);
     }
 
 
@@ -68,17 +67,16 @@ public class OlxService {
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
                 .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();*/
+                .body(JsonNode.class)
+                ;*/
 
         return OlxClient.get()
                 .uri(String.format("/partner/adverts/%s", advertID))
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<OlxObjectWrapperClass<SimplifiedOlxAdvert>>() {
-                })
-                .block();
+                .body(new ParameterizedTypeReference<OlxObjectWrapperClass<SimplifiedOlxAdvert>>() {
+                });
     }
 
     public OlxObjectWrapperClass<OlxAdvert> getModifiableOlxAdvert(String advertID, User user) {
@@ -87,9 +85,8 @@ public class OlxService {
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<OlxObjectWrapperClass<OlxAdvert>>() {
-                })
-                .block();
+                .body(new ParameterizedTypeReference<OlxObjectWrapperClass<OlxAdvert>>() {
+                });
     }
 
     /*public OlxListWrapperClass<SimplifiedOlxAdvert> getAdverts(User user) {
@@ -98,17 +95,17 @@ public class OlxService {
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
                 .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();*//*
+                .body(JsonNode.class)
+                ;*//*
 
         return OlxClient.get()
                 .uri("/partner/adverts")
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<OlxListWrapperClass<SimplifiedOlxAdvert>>() {
+                .body(new ParameterizedTypeReference<OlxListWrapperClass<SimplifiedOlxAdvert>>() {
                 })
-                .block();
+                ;
     }*/
 
     public JsonNode updateAdvert(OlxAdvert updatedAdvert, String advertID, User user) {
@@ -117,10 +114,9 @@ public class OlxService {
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
-                .bodyValue(updatedAdvert)
+                .body(updatedAdvert)
                 .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                .body(JsonNode.class);
     }
 
     public JsonNode updateAdvertPrice(int newPrice, String advertID, User user) {
@@ -139,15 +135,18 @@ public class OlxService {
 
         String uri = String.format("/partner/adverts/%s/commands?command", advertID);
 
+        Map<String, String> formData = new HashMap<>();
+        formData.put("command", command);
+        formData.put("is_success", "false");
+
         return OlxClient.post()
                 .uri(uri)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
-                .body(fromFormData("command", command).with("is_success", "false"))
+                .body(formData)
                 .retrieve()
-                .toBodilessEntity()
-                .block();
+                .toBodilessEntity();
     }
 
 
@@ -157,8 +156,7 @@ public class OlxService {
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
                 .retrieve()
-                .toBodilessEntity()
-                .block();
+                .toBodilessEntity();
     }
 
 
@@ -175,8 +173,7 @@ public class OlxService {
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
                 .retrieve()
-                .bodyToMono(String.class)
-                .block();
+                .body(String.class);
 
         JsonNode node = objectMapper.readTree(data).get("data").get(0);
 
@@ -205,8 +202,8 @@ public class OlxService {
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
                 .retrieve()
-                .bodyToMono(String.class)
-                .block();
+                .body(String.class)
+                ;
 
         JsonNode jsonData = objectMapper.readTree(data);*/
 
@@ -215,9 +212,8 @@ public class OlxService {
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<OlxListWrapperClass<Category>>() {
-                })
-                .block();
+                .body(new ParameterizedTypeReference<OlxListWrapperClass<Category>>() {
+                });
 
         assert response != null;
         return response.getData().get(0).getId();
@@ -235,8 +231,8 @@ public class OlxService {
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
                 .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                .body(JsonNode.class)
+                ;
 
         assert rootNode != null;
 
@@ -253,9 +249,8 @@ public class OlxService {
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getUserHeaders(user)))
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<OlxListWrapperClass<CategoryAttribs>>() {
-                })
-                .block();
+                .body(new ParameterizedTypeReference<OlxListWrapperClass<CategoryAttribs>>() {
+                });
 
         List<CategoryAttribs> attribList = new ArrayList<>();
 
@@ -285,7 +280,7 @@ public class OlxService {
                 .uri("/open/oauth/token")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(OlxTokenRequest.otRequestBuilder()
+                .body(OlxTokenRequest.otRequestBuilder()
                         .grant_type("authorization_code")
                         .client_id(envService.getOLX_CLIENT_ID())
                         .client_secret(envService.getOLX_CLIENT_SECRET())
@@ -294,8 +289,7 @@ public class OlxService {
                         .build()
                 )
                 .retrieve()
-                .bodyToMono(GrantCodeResponse.class)
-                .block();
+                .body(GrantCodeResponse.class);
     }
 
 
@@ -338,15 +332,14 @@ public class OlxService {
                 .uri("/open/oauth/token").accept(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(OlxRefreshRequest.orRequestBuilder()
+                .body(OlxRefreshRequest.orRequestBuilder()
                         .grant_type("refresh_token")
                         .client_id(envService.getOLX_CLIENT_ID())
                         .client_secret(envService.getOLX_CLIENT_SECRET())
                         .refresh_token(refreshToken)
                         .build())
                 .retrieve()
-                .bodyToMono(OlxTokenResponse.class)
-                .block();
+                .body(OlxTokenResponse.class);
     }
 
 
@@ -356,15 +349,14 @@ public class OlxService {
                 .uri("/open/oauth/token")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(OlxClientRequest.ocRequestBuilder()
+                .body(OlxClientRequest.ocRequestBuilder()
                         .grant_type("client_credentials")
                         .client_id(envService.getOLX_CLIENT_ID())
                         .client_secret(envService.getOLX_CLIENT_SECRET())
                         .scope("v2 read write")
                         .build())
                 .retrieve()
-                .bodyToMono(OlxTokenResponse.class)
-                .block();
+                .body(OlxTokenResponse.class);
     }
 
     public OlxListingState mapStateToEnum(String state) {

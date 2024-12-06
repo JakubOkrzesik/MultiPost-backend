@@ -30,10 +30,10 @@ public class EbayService {
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .headers(h -> h.addAll(getEbayAuthHeaders()))
-                .bodyValue(requestBody)
+                .body(requestBody)
                 .retrieve()
-                .bodyToMono(EbayTokenResponse.class)
-                .block();
+                .body(EbayTokenResponse.class)
+                ;
     }
 
     // Getting the application's tokens
@@ -49,12 +49,12 @@ public class EbayService {
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .headers(h -> h.addAll(getEbayAuthHeaders()))
-                .bodyValue(requestBody)
+                .body(requestBody)
                 .retrieve()
-                .onStatus(HttpStatusCode::is4xxClientError, response -> response.bodyToMono(String.class)
+                .onStatus(HttpStatusCode::is4xxClientError, response -> response.body(String.class)
                         .flatMap(errorBody -> Mono.error(new RuntimeException("Client error: " + errorBody))))
-                .bodyToMono(EbayTokenResponse.class)
-                .block();
+                .body(EbayTokenResponse.class)
+                ;
     }
 
     public JsonNode createAdvert(JsonNode data, User user) {
@@ -68,10 +68,10 @@ public class EbayService {
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(headers))
-                .bodyValue(data)
+                .body(data)
                 .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                .body(JsonNode.class)
+                ;
     }
 
     // Required data
@@ -100,8 +100,8 @@ public class EbayService {
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getEbayUserHeaders(userToken)))
                 .retrieve()
-                .bodyToMono(ObjectNode.class)
-                .block();
+                .body(ObjectNode.class)
+                ;
     }
 
     private ObjectNode createFulfillmentPolicy(String userToken) {
@@ -114,8 +114,8 @@ public class EbayService {
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getEbayUserHeaders(userToken)))
                 .retrieve()
-                .bodyToMono(ObjectNode.class)
-                .block();
+                .body(ObjectNode.class)
+                ;
     }
 
     private ObjectNode createPaymentPolicy(String userToken) {
@@ -128,8 +128,8 @@ public class EbayService {
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(getEbayUserHeaders(userToken)))
                 .retrieve()
-                .bodyToMono(ObjectNode.class)
-                .block();
+                .body(ObjectNode.class)
+                ;
     }
 
     private ObjectNode createReturnPolicy(String userToken) {
@@ -188,10 +188,10 @@ public class EbayService {
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .headers(h -> h.addAll(getEbayAuthHeaders()))
-                .bodyValue(requestBody)
+                .body(requestBody)
                 .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                .body(JsonNode.class)
+                ;
     }
 
     private HttpHeaders getEbayAuthHeaders() {

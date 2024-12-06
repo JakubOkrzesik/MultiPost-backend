@@ -2,6 +2,7 @@ package com.example.multipost_backend.listings.DtoApiTest.AllegroDto;
 
 import com.example.multipost_backend.auth.user.User;
 import com.example.multipost_backend.auth.user.UserRepository;
+import com.example.multipost_backend.listings.allegroModels.AllegroApiException;
 import com.example.multipost_backend.listings.allegroModels.AllegroProduct;
 import com.example.multipost_backend.listings.allegroModels.CategoryResponse;
 import com.example.multipost_backend.listings.allegroModels.ProductWrapper;
@@ -13,18 +14,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
-import org.springframework.web.reactive.function.client.ExchangeStrategies;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestClient;
 
 @SpringBootTest
 public class AllegroDtoTest {
-
-    final int size = 16 * 1024 * 1024;
-    final ExchangeStrategies strategies = ExchangeStrategies.builder()
-            .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(size))
-            .build();
 
     User user;
     String token;
@@ -33,17 +26,13 @@ public class AllegroDtoTest {
     private UserRepository userRepository;
     @Autowired
     private AllegroService allegroService;
-    private final WebClient TestAllegroClient = WebClient.builder()
+
+    private final RestClient TestAllegroClient = RestClient.builder()
             .baseUrl("https://api.allegro.pl.allegrosandbox.pl")
-            .filter(ExchangeFilterFunction.ofResponseProcessor(clientResponse -> {
-                if (clientResponse.statusCode().is4xxClientError()) {
-                    return clientResponse.bodyToMono(String.class)
-                            .flatMap(errorBody -> Mono.error(new RuntimeException("Client error: " + errorBody)));
-                }
-                return Mono.just(clientResponse);
-            }))
-            .exchangeStrategies(strategies)
+            .defaultStatusHandler(httpStatusCode -> httpStatusCode.is4xxClientError() || httpStatusCode.is5xxServerError(),
+                    (request, response) -> {throw new AllegroApiException(response.getStatusCode(), response.getBody());})
             .build();
+
 
     @BeforeEach
     void setUser() {
@@ -63,8 +52,8 @@ public class AllegroDtoTest {
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .retrieve()
-                .bodyToMono(CategoryResponse.class)
-                .block();
+                .body(CategoryResponse.class)
+                ;
 
         assert list != null;
         System.out.println(list);
@@ -80,8 +69,8 @@ public class AllegroDtoTest {
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .retrieve()
-                .bodyToMono(ProductWrapper.class)
-                .block();
+                .body(ProductWrapper.class)
+                ;
 
         System.out.println(response);
     }
@@ -96,8 +85,8 @@ public class AllegroDtoTest {
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .retrieve()
-                .bodyToMono(AllegroProduct.class)
-                .block();
+                .body(AllegroProduct.class)
+                ;
 
         System.out.println(response);
     }
@@ -113,8 +102,8 @@ public class AllegroDtoTest {
                 .accept(MediaType.valueOf("application/vnd.allegro.public.v1+json"))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .retrieve()
-                .bodyToMono(ProductWrapper.class)
-                .block();
+                .body(ProductWrapper.class)
+                ;
 
         System.out.println(response);
     }

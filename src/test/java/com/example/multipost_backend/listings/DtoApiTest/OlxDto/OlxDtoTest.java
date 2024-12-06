@@ -15,10 +15,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
-import org.springframework.web.reactive.function.client.ExchangeStrategies;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,26 +25,15 @@ public class OlxDtoTest {
     User user;
     MultiValueMap<String, String> headers;
 
-    final int size = 16 * 1024 * 1024;
-    final ExchangeStrategies strategies = ExchangeStrategies.builder()
-            .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(size))
-            .build();
-
     @Autowired
     private UserRepository userRepository;
     @Autowired
     private OlxService olxService;
-    
-    private final WebClient TestOlxClient = WebClient.builder()
+
+    private final RestClient TestOlxClient = RestClient.builder()
             .baseUrl("https://www.olx.pl/api")
-            .filter(ExchangeFilterFunction.ofResponseProcessor(clientResponse -> {
-                if (clientResponse.statusCode().is4xxClientError()) {
-                    return clientResponse.bodyToMono(String.class)
-                            .flatMap(errorBody -> Mono.error(new RuntimeException("Client error: " + errorBody)));
-                }
-                return Mono.just(clientResponse);
-            }))
-            .exchangeStrategies(strategies)
+            .defaultStatusHandler(httpStatusCode -> httpStatusCode.is4xxClientError() || httpStatusCode.is5xxServerError(),
+                    (request, response) -> {throw new OlxApiException(response.getStatusCode(), response.getBody());})
             .build();
     
     @BeforeEach
@@ -73,9 +59,9 @@ public class OlxDtoTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(headers))
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<OlxObjectWrapperClass<SimplifiedOlxAdvert>>() {
+                .body(new ParameterizedTypeReference<OlxObjectWrapperClass<SimplifiedOlxAdvert>>() {
                 })
-                .block();
+                ;
 
         assert response != null;
         System.out.println(response.getData());
@@ -93,9 +79,9 @@ public class OlxDtoTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(headers))
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<OlxListWrapperClass<SimplifiedOlxAdvert>>() {
+                .body(new ParameterizedTypeReference<OlxListWrapperClass<SimplifiedOlxAdvert>>() {
                 })
-                .block();
+                ;
         
         System.out.println(response);
     }
@@ -110,9 +96,9 @@ public class OlxDtoTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(headers))
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<OlxListWrapperClass<Category>>() {
+                .body(new ParameterizedTypeReference<OlxListWrapperClass<Category>>() {
                 })
-                .block();
+                ;
 
         assert response != null;
         System.out.println(response.getData().get(0).getId());
@@ -130,9 +116,9 @@ public class OlxDtoTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .headers(h -> h.addAll(headers))
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<OlxListWrapperClass<CategoryAttribs>>() {
+                .body(new ParameterizedTypeReference<OlxListWrapperClass<CategoryAttribs>>() {
                 })
-                .block();
+                ;
 
         List<CategoryAttribs> attribsList = new ArrayList<>();
 
